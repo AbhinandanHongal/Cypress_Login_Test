@@ -1,0 +1,11 @@
+# Node dependencies
+node_modules/
+
+# Cypress artifacts
+cypress/screenshots/
+cypress/videos/
+
+# Logs and system files
+package-lock.json
+.DS_Store
+Thumbs.db

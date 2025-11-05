@@ -1,0 +1,25 @@
+{
+  "validUser": {
+    "email": "retail_store_admin@48.ie",
+    "password": "rE_tAiL-48"
+  },
+  "orderSims": {
+    "storeName": "Store 1",
+    "deliveryAddress": "Lacey, Loon, Castlecomer, Co. Kilkenny",
+    "sims": "50",
+    "message": "Please deliver ASAP",
+    "status": "Pending"
+  },
+  "invalidUser": {
+    "email": "wrong_user@thbs.com",
+    "password": "wrongpass"
+  },
+  "emptyEmail": {
+    "email": "",
+    "password": "rE_tAiL-48"
+  },
+  "emptyPassword": {
+    "email": "retail_store_admin@48.ie",
+    "password": ""
+  }
+}

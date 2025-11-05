@@ -1,0 +1,109 @@
+{
+  "stats": {
+    "suites": 1,
+    "tests": 1,
+    "passes": 0,
+    "pending": 0,
+    "failures": 1,
+    "start": "2025-10-28T13:42:04.162Z",
+    "end": "2025-10-28T13:42:04.513Z",
+    "duration": 351,
+    "testsRegistered": 1,
+    "passPercent": 0,
+    "pendingPercent": 0,
+    "other": 0,
+    "hasOther": false,
+    "skipped": 0,
+    "hasSkipped": false
+  },
+  "results": [
+    {
+      "uuid": "c9cb3b39-5b4a-4177-b497-38b5d6799aa5",
+      "title": "",
+      "fullFile": "cypress\\e2e\\tests\\orderSimsTest.cy.js",
+      "file": "cypress\\e2e\\tests\\orderSimsTest.cy.js",
+      "beforeHooks": [],
+      "afterHooks": [],
+      "tests": [],
+      "suites": [
+        {
+          "uuid": "c306907d-fbae-45f9-b30b-05e9ab65affc",
+          "title": "Order Sims - Bulk SIM Ordering",
+          "fullFile": "",
+          "file": "",
+          "beforeHooks": [],
+          "afterHooks": [],
+          "tests": [
+            {
+              "title": "should successfully place a bulk SIM order",
+              "fullTitle": "Order Sims - Bulk SIM Ordering should successfully place a bulk SIM order",
+              "timedOut": null,
+              "duration": 279,
+              "state": "failed",
+              "speed": null,
+              "pass": false,
+              "fail": true,
+              "pending": false,
+              "context": "[\n  {\n    \"title\": \"cypress-mochawesome-reporter-videos-failed\",\n    \"value\": \"cypress\\\\e2e\\\\tests\\\\orderSimsTest.cy.js\"\n  },\n  {\n    \"title\": \"cypress-mochawesome-reporter-screenshots\",\n    \"value\": [\n      [\n        \"\\\\orderSimsTest.cy.js\\\\Order Sims - Bulk SIM Ordering -- should successfully place a bulk SIM order (failed).png\"\n      ]\n    ]\n  }\n]",
+              "code": "// Step 1: Login first\n_loginPage.default.visit();\n_loginPage.default.enterEmail(this.data.validUser.email);\n_loginPage.default.enterPassword(this.data.validUser.password);\n_loginPage.default.clickSignIn();\ncy.contains('Order History', {\n  timeout: 20000\n}).should('be.visible');\n// Step 2: Go to Order Sims page\n_orderSimsPage.default.visit();\ncy.url().should('include', '/order-sims');\n// Step 3: Fill in order details\n_orderSimsPage.default.enterRetailStoreName(this.data.orderSims.storeName);\n_orderSimsPage.default.enterDeliveryAddress(this.data.orderSims.deliveryAddress);\n_orderSimsPage.default.enterNumberOfSims(this.data.orderSims.sims);\n//OrderSimsPage.selectShippingType(this.data.orderSims.shippingType);\n_orderSimsPage.default.enterMessage(this.data.orderSims.message);\n// Step 4: Submit the order\n_orderSimsPage.default.clickOrderSims();\n// Step 5: Verify success message\n_orderSimsPage.default.verifyOrderSuccess();\n// Step 6: Verify order appears in Order History\n_orderSimsPage.default.verifyOrderInHistory(this.data.orderSims.storeName, this.data.orderSims.sims, this.data.orderSims.status);",
+              "err": {
+                "message": "TypeError: Cannot read properties of undefined (reading 'storeName')",
+                "estack": "TypeError: Cannot read properties of undefined (reading 'storeName')\n    at Context.eval (webpack://cypress_mocha_framework/./cypress/e2e/tests/orderSimsTest.cy.js:25:59)\n    at runnable.fn (https://retail-staging.48.ie/__cypress/runner/cypress_runner.js:145850:19)\n    at callFn (https://retail-staging.48.ie/__cypress/runner/cypress_runner.js:164942:21)\n    at Runnable.run (https://retail-staging.48.ie/__cypress/runner/cypress_runner.js:164929:7)\n    at <unknown> (https://retail-staging.48.ie/__cypress/runner/cypress_runner.js:171024:30)\n    at PassThroughHandlerContext.finallyHandler (https://retail-staging.48.ie/__cypress/runner/cypress_runner.js:4042:23)\n    at PassThroughHandlerContext.tryCatcher (https://retail-staging.48.ie/__cypress/runner/cypress_runner.js:1777:23)\n    at Promise._settlePromiseFromHandler (https://retail-staging.48.ie/__cypress/runner/cypress_runner.js:1489:31)\n    at Promise._settlePromise (https://retail-staging.48.ie/__cypress/runner/cypress_runner.js:1546:18)",
+                "diff": null
+              },
+              "uuid": "d3d6876e-0eda-468a-870d-ff2a165a5b76",
+              "parentUUID": "c306907d-fbae-45f9-b30b-05e9ab65affc",
+              "isHook": false,
+              "skipped": false
+            }
+          ],
+          "suites": [],
+          "passes": [],
+          "failures": [
+            "d3d6876e-0eda-468a-870d-ff2a165a5b76"
+          ],
+          "pending": [],
+          "skipped": [],
+          "duration": 279,
+          "root": false,
+          "rootEmpty": false,
+          "_timeout": 2000
+        }
+      ],
+      "passes": [],
+      "failures": [],
+      "pending": [],
+      "skipped": [],
+      "duration": 0,
+      "root": true,
+      "rootEmpty": true,
+      "_timeout": 2000
+    }
+  ],
+  "meta": {
+    "mocha": {
+      "version": "7.2.0"
+    },
+    "mochawesome": {
+      "options": {
+        "quiet": false,
+        "reportFilename": "mochawesome",
+        "saveHtml": false,
+        "saveJson": true,
+        "consoleReporter": "spec",
+        "useInlineDiffs": false,
+        "code": true
+      },
+      "version": "7.1.4"
+    },
+    "marge": {
+      "options": {
+        "reportDir": "cypress/reports",
+        "overwrite": false,
+        "html": false,
+        "json": true
+      },
+      "version": "6.3.0"
+    }
+  }
+}
