@@ -4,11 +4,17 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "cypress:run": "cypress run",
+    "test": "npx cypress run",
+    "open": "npx cypress open",
+    "login:report": "npx cypress run --spec cypress/e2e/tests/loginTest.cy.js --reporter mochawesome --reporter-options reportDir=cypress/reports,overwrite=true,html=false,json=true && npx mochawesome-merge cypress/reports/*.json > cypress/reports/report.json && npx mochawesome-report-generator cypress/reports/report.json -o cypress/reports/html",
+
+    "cypress:run": "cypress run --reporter mochawesome --reporter-options reportDir=cypress/reports,overwrite=true,html=false,json=true",
     "merge-reports": "npx mochawesome-merge cypress/reports/*.json > cypress/reports/report.json",
-    "generate-report": "npx marge cypress/reports/report.json -f report -o cypress/reports/html",
-    "test:report": "npm run cypress:run && npm run merge-reports && npm run generate-report"
+    "generate-report": "npx mochawesome-report-generator cypress/reports/mochawesome.json -f report -o cypress/reports/html",
+    "open-report": "start cypress/reports/html/report.html",
+    "test:report": "npm run cypress:run && npm run generate-report",
+    "clean": "rimraf cypress/reports cypress/screenshots cypress/videos",
+    "test:clean": "npm run clean && npx cypress run"
   },
   "keywords": [],
   "author": "",
@@ -19,7 +25,6 @@
     "marge": "^1.0.1",
     "mochawesome": "^7.1.4",
     "mochawesome-merge": "^5.0.0",
-    "mochawesome-report-generator": "^6.3.0",
-    "rimraf": "^6.0.1"
+    "mochawesome-report-generator": "^6.3.0"
   }
 }
