@@ -1,14 +1,14 @@
 {
   "stats": {
     "suites": 1,
-    "tests": 2,
+    "tests": 1,
     "passes": 0,
     "pending": 0,
-    "failures": 2,
-    "start": "2025-10-28T09:17:52.409Z",
-    "end": "2025-10-28T09:18:11.503Z",
-    "duration": 19094,
-    "testsRegistered": 2,
+    "failures": 1,
+    "start": "2025-11-06T06:07:50.349Z",
+    "end": "2025-11-06T06:08:38.716Z",
+    "duration": 48367,
+    "testsRegistered": 1,
     "passPercent": 0,
     "pendingPercent": 0,
     "other": 0,
@@ -18,63 +18,41 @@
   },
   "results": [
     {
-      "uuid": "4f5deb04-1daf-4f25-9c8c-da35aba9fd1b",
+      "uuid": "d6976071-83e6-40da-8955-08f4c3f0b461",
       "title": "",
-      "fullFile": "cypress\\e2e\\tests\\loginTest.cy.js",
-      "file": "cypress\\e2e\\tests\\loginTest.cy.js",
+      "fullFile": "cypress\\e2e\\tests\\orderSimsTest.cy.js",
+      "file": "cypress\\e2e\\tests\\orderSimsTest.cy.js",
       "beforeHooks": [],
       "afterHooks": [],
       "tests": [],
       "suites": [
         {
-          "uuid": "f266ea06-5569-4407-b6b9-9e829484e111",
-          "title": "Login Tests - Retail",
+          "uuid": "d1445264-59a4-4f20-8aa2-94280f2d023d",
+          "title": "Order Sims - Bulk SIM Ordering",
           "fullFile": "",
           "file": "",
           "beforeHooks": [],
           "afterHooks": [],
           "tests": [
             {
-              "title": "Login with valid credentials",
-              "fullTitle": "Login Tests - Retail Login with valid credentials",
+              "title": "should successfully place a bulk SIM order",
+              "fullTitle": "Order Sims - Bulk SIM Ordering should successfully place a bulk SIM order",
               "timedOut": null,
-              "duration": 14547,
+              "duration": 48324,
               "state": "failed",
               "speed": null,
               "pass": false,
               "fail": true,
               "pending": false,
-              "context": "[\n  {\n    \"title\": \"cypress-mochawesome-reporter-videos-failed\",\n    \"value\": \"cypress\\\\e2e\\\\tests\\\\loginTest.cy.js\"\n  },\n  {\n    \"title\": \"cypress-mochawesome-reporter-screenshots\",\n    \"value\": [\n      [\n        \"\\\\loginTest.cy.js\\\\Login Tests - Retail -- Login with valid credentials (failed).png\"\n      ]\n    ]\n  }\n]",
-              "code": "_loginPage.default.visit();\ncy.wait(5000); // wait for 2 seconds\n_loginPage.default.enterEmail(this.data.validUser.email);\n_loginPage.default.enterPassword(this.data.validUser.password);\n_loginPage.default.clickSignIn();\ncy.wait(70000);\n_loginPage.default.assertDashboardVisible();",
+              "context": "[\n  {\n    \"title\": \"cypress-mochawesome-reporter-videos-failed\",\n    \"value\": \"cypress\\\\e2e\\\\tests\\\\orderSimsTest.cy.js\"\n  },\n  {\n    \"title\": \"cypress-mochawesome-reporter-screenshots\",\n    \"value\": [\n      [\n        \"\\\\orderSimsTest.cy.js\\\\Order Sims - Bulk SIM Ordering -- should successfully place a bulk SIM order (failed).png\"\n      ]\n    ]\n  }\n]",
+              "code": "// Step 1: Login\n_loginPage.default.visit();\n_loginPage.default.enterEmail(testData.validUser.email);\n_loginPage.default.enterPassword(testData.validUser.password);\n_loginPage.default.showPassword();\n_loginPage.default.clickSignIn();\n// Wait until dashboard visible\ncy.contains('Order History', {\n  timeout: 20000\n}).should('be.visible');\n// Step 2: Go to Order Sims page\n_orderSimsPage.default.visit();\ncy.url().should('include', '/order-sims');\n// Step 3: Fill order details\n_orderSimsPage.default.enterRetailStoreName(testData.orderSims.storeName);\n_orderSimsPage.default.enterDeliveryAddress(testData.orderSims.deliveryAddress);\n_orderSimsPage.default.enterNumberOfSims(testData.orderSims.sims);\n_orderSimsPage.default.enterMessage(testData.orderSims.message);\n// Step 4: Submit order\n_orderSimsPage.default.clickOrderSims();\ncy.wait(5000); // wait for 5 seconds for popup to appear\n// Step 5: Handle popup\n_orderSimsPage.default.verifyOrderPopupAndClose();\n// Step 6: Navigate to order history\n_orderSimsPage.default.goToOrderHistory();\n// Step 7: Verify order appears\n_orderSimsPage.default.verifyOrderInHistory(testData.orderSims.storeName, testData.orderSims.sims, testData.orderSims.status);",
               "err": {
-                "message": "AssertionError: Timed out retrying after 4000ms: Expected to find element: `input[name=\"email\"]`, but never found it.",
-                "estack": "AssertionError: Timed out retrying after 4000ms: Expected to find element: `input[name=\"email\"]`, but never found it.\n    at Object.emailInput (webpack://cypress_mocha_framework/./cypress/e2e/pages/loginPage.js:3:27)\n    at LoginPage.enterEmail (webpack://cypress_mocha_framework/./cypress/e2e/pages/loginPage.js:14:20)\n    at Context.eval (webpack://cypress_mocha_framework/./cypress/e2e/tests/loginTest.cy.js:12:14)",
+                "message": "Error: Timed out retrying after 30000ms: Modal not visible yet",
+                "estack": "Error: Timed out retrying after 30000ms: Modal not visible yet\n    at Context.eval (webpack://cypress_mocha_framework/./cypress/e2e/pages/orderSimsPage.js:113:20)\n    at <unknown> (https://retail-staging.48.ie/__cypress/runner/cypress_runner.js:121664:17)\n    at tryCatcher (https://retail-staging.48.ie/__cypress/runner/cypress_runner.js:1777:23)\n    at Promise.attempt.Promise.try (https://retail-staging.48.ie/__cypress/runner/cypress_runner.js:4285:29)\n    at Context.shouldFnWithCallback (https://retail-staging.48.ie/__cypress/runner/cypress_runner.js:121661:66)\n    at Context.shouldFn (https://retail-staging.48.ie/__cypress/runner/cypress_runner.js:121704:37)\n    at Context.should (https://retail-staging.48.ie/__cypress/runner/cypress_runner.js:121823:23)\n    at <unknown> (https://retail-staging.48.ie/__cypress/runner/cypress_runner.js:150511:39)\n    at assertions (https://retail-staging.48.ie/__cypress/runner/cypress_runner.js:150759:16)\n    at tryCatcher (https://retail-staging.48.ie/__cypress/runner/cypress_runner.js:1777:23)",
                 "diff": null
               },
-              "uuid": "5199de88-3a47-43ad-9fcf-c9b105af8c64",
-              "parentUUID": "f266ea06-5569-4407-b6b9-9e829484e111",
-              "isHook": false,
-              "skipped": false
-            },
-            {
-              "title": "Login fails with invalid credentials",
-              "fullTitle": "Login Tests - Retail Login fails with invalid credentials",
-              "timedOut": null,
-              "duration": 4476,
-              "state": "failed",
-              "speed": null,
-              "pass": false,
-              "fail": true,
-              "pending": false,
-              "context": "[\n  {\n    \"title\": \"cypress-mochawesome-reporter-videos-failed\",\n    \"value\": \"cypress\\\\e2e\\\\tests\\\\loginTest.cy.js\"\n  },\n  {\n    \"title\": \"cypress-mochawesome-reporter-screenshots\",\n    \"value\": [\n      [\n        \"\\\\loginTest.cy.js\\\\Login Tests - Retail -- Login fails with invalid credentials (failed).png\"\n      ]\n    ]\n  }\n]",
-              "code": "_loginPage.default.visit();\n_loginPage.default.enterEmail(this.data.invalidUser.email);\n_loginPage.default.enterPassword(this.data.invalidUser.password);\n_loginPage.default.clickSignIn();\ncy.contains('Invalid credentials').should('be.visible');",
-              "err": {
-                "message": "AssertionError: Timed out retrying after 4000ms: Expected to find element: `input[name=\"email\"]`, but never found it.",
-                "estack": "AssertionError: Timed out retrying after 4000ms: Expected to find element: `input[name=\"email\"]`, but never found it.\n    at Object.emailInput (webpack://cypress_mocha_framework/./cypress/e2e/pages/loginPage.js:3:27)\n    at LoginPage.enterEmail (webpack://cypress_mocha_framework/./cypress/e2e/pages/loginPage.js:14:20)\n    at Context.eval (webpack://cypress_mocha_framework/./cypress/e2e/tests/loginTest.cy.js:21:14)",
-                "diff": null
-              },
-              "uuid": "66356d94-92fa-4e6a-aca9-c029b3ae2061",
-              "parentUUID": "f266ea06-5569-4407-b6b9-9e829484e111",
+              "uuid": "bb72d829-a718-4816-897b-bb3c393ce823",
+              "parentUUID": "d1445264-59a4-4f20-8aa2-94280f2d023d",
               "isHook": false,
               "skipped": false
             }
@@ -82,12 +60,11 @@
           "suites": [],
           "passes": [],
           "failures": [
-            "5199de88-3a47-43ad-9fcf-c9b105af8c64",
-            "66356d94-92fa-4e6a-aca9-c029b3ae2061"
+            "bb72d829-a718-4816-897b-bb3c393ce823"
           ],
           "pending": [],
           "skipped": [],
-          "duration": 19023,
+          "duration": 48324,
           "root": false,
           "rootEmpty": false,
           "_timeout": 2000
@@ -122,7 +99,7 @@
     "marge": {
       "options": {
         "reportDir": "cypress/reports",
-        "overwrite": false,
+        "overwrite": true,
         "html": false,
         "json": true
       },

@@ -1,0 +1,175 @@
+{
+  "stats": {
+    "suites": 1,
+    "tests": 4,
+    "passes": 1,
+    "pending": 0,
+    "failures": 3,
+    "start": "2025-11-05T05:39:12.135Z",
+    "end": "2025-11-05T05:40:09.780Z",
+    "duration": 57645,
+    "testsRegistered": 4,
+    "passPercent": 25,
+    "pendingPercent": 0,
+    "other": 0,
+    "hasOther": false,
+    "skipped": 0,
+    "hasSkipped": false
+  },
+  "results": [
+    {
+      "uuid": "ba641e40-a330-4f02-8c8c-f3086410f110",
+      "title": "",
+      "fullFile": "cypress\\e2e\\tests\\loginTest.cy.js",
+      "file": "cypress\\e2e\\tests\\loginTest.cy.js",
+      "beforeHooks": [],
+      "afterHooks": [],
+      "tests": [],
+      "suites": [
+        {
+          "uuid": "572a7a2a-b945-4cdd-8a2d-9b51b14d1178",
+          "title": "Login Tests - Retail",
+          "fullFile": "",
+          "file": "",
+          "beforeHooks": [],
+          "afterHooks": [],
+          "tests": [
+            {
+              "title": "Login with valid credentials",
+              "fullTitle": "Login Tests - Retail Login with valid credentials",
+              "timedOut": null,
+              "duration": 24277,
+              "state": "passed",
+              "speed": "slow",
+              "pass": true,
+              "fail": false,
+              "pending": false,
+              "context": "{\n  \"title\": \"cypress-mochawesome-reporter-videos-passed\",\n  \"value\": \"cypress\\\\e2e\\\\tests\\\\loginTest.cy.js\"\n}",
+              "code": "_loginPage.default.visit();\ncy.wait(5000); // wait for 2 seconds\n_loginPage.default.enterEmail(this.data.validUser.email);\n_loginPage.default.enterPassword(this.data.validUser.password);\n_loginPage.default.showPassword();\n_loginPage.default.clickSignIn();\ncy.wait(10000);\ncy.contains('Order History').should('be.visible');",
+              "err": {},
+              "uuid": "651611f8-7991-4a15-9e67-0deed08f035e",
+              "parentUUID": "572a7a2a-b945-4cdd-8a2d-9b51b14d1178",
+              "isHook": false,
+              "skipped": false
+            },
+            {
+              "title": "Login fails with invalid credentials",
+              "fullTitle": "Login Tests - Retail Login fails with invalid credentials",
+              "timedOut": null,
+              "duration": 11124,
+              "state": "failed",
+              "speed": null,
+              "pass": false,
+              "fail": true,
+              "pending": false,
+              "context": "[\n  {\n    \"title\": \"cypress-mochawesome-reporter-videos-failed\",\n    \"value\": \"cypress\\\\e2e\\\\tests\\\\loginTest.cy.js\"\n  },\n  {\n    \"title\": \"cypress-mochawesome-reporter-screenshots\",\n    \"value\": [\n      [\n        \"\\\\loginTest.cy.js\\\\Login Tests - Retail -- Login fails with invalid credentials (failed).png\"\n      ]\n    ]\n  }\n]",
+              "code": "_loginPage.default.visit();\ncy.wait(5000); // wait for 5 seconds\n_loginPage.default.enterEmail(this.data.invalidUser.email);\n_loginPage.default.enterPassword(this.data.invalidUser.password);\n_loginPage.default.showPassword();\n_loginPage.default.clickSignIn();\ncy.contains('Invalid credentials').should('be.visible');",
+              "err": {
+                "message": "AssertionError: Timed out retrying after 4000ms: Expected to find content: 'Invalid credentials' but never did.",
+                "estack": "AssertionError: Timed out retrying after 4000ms: Expected to find content: 'Invalid credentials' but never did.\n    at Context.eval (webpack://cypress_mocha_framework/./cypress/e2e/tests/loginTest.cy.js:27:39)",
+                "diff": null
+              },
+              "uuid": "e97d95a0-476a-45aa-bff7-4c7fad1a5f6e",
+              "parentUUID": "572a7a2a-b945-4cdd-8a2d-9b51b14d1178",
+              "isHook": false,
+              "skipped": false
+            },
+            {
+              "title": "Login fails with empty email",
+              "fullTitle": "Login Tests - Retail Login fails with empty email",
+              "timedOut": null,
+              "duration": 10581,
+              "state": "failed",
+              "speed": null,
+              "pass": false,
+              "fail": true,
+              "pending": false,
+              "context": "[\n  {\n    \"title\": \"cypress-mochawesome-reporter-videos-failed\",\n    \"value\": \"cypress\\\\e2e\\\\tests\\\\loginTest.cy.js\"\n  },\n  {\n    \"title\": \"cypress-mochawesome-reporter-screenshots\",\n    \"value\": [\n      [\n        \"\\\\loginTest.cy.js\\\\Login Tests - Retail -- Login fails with empty email (failed).png\"\n      ]\n    ]\n  }\n]",
+              "code": "_loginPage.default.visit();\ncy.wait(5000); // wait for 5 seconds\n_loginPage.default.enterEmail(this.data.emptyEmail.email);\n_loginPage.default.enterPassword(this.data.emptyEmail.password);\n_loginPage.default.clickSignIn();\ncy.contains('Not a valid email').should('be.visible');",
+              "err": {
+                "message": "AssertionError: Timed out retrying after 4000ms: Expected to find content: 'Not a valid email' but never did.",
+                "estack": "AssertionError: Timed out retrying after 4000ms: Expected to find content: 'Not a valid email' but never did.\n    at Context.eval (webpack://cypress_mocha_framework/./cypress/e2e/tests/loginTest.cy.js:36:37)",
+                "diff": null
+              },
+              "uuid": "1fd3d09b-8b72-4549-9b71-b6a148db7707",
+              "parentUUID": "572a7a2a-b945-4cdd-8a2d-9b51b14d1178",
+              "isHook": false,
+              "skipped": false
+            },
+            {
+              "title": "Login fails with empty password",
+              "fullTitle": "Login Tests - Retail Login fails with empty password",
+              "timedOut": null,
+              "duration": 11290,
+              "state": "failed",
+              "speed": null,
+              "pass": false,
+              "fail": true,
+              "pending": false,
+              "context": "[\n  {\n    \"title\": \"cypress-mochawesome-reporter-videos-failed\",\n    \"value\": \"cypress\\\\e2e\\\\tests\\\\loginTest.cy.js\"\n  },\n  {\n    \"title\": \"cypress-mochawesome-reporter-screenshots\",\n    \"value\": [\n      [\n        \"\\\\loginTest.cy.js\\\\Login Tests - Retail -- Login fails with empty password (failed).png\"\n      ]\n    ]\n  }\n]",
+              "code": "_loginPage.default.visit();\ncy.wait(5000); // wait for 5 seconds\n_loginPage.default.enterEmail(this.data.emptyPassword.email);\n_loginPage.default.enterPassword(this.data.emptyPassword.password);\n_loginPage.default.clickSignIn();\ncy.contains('Invalid credentials. Please try again.').should('be.visible');",
+              "err": {
+                "message": "AssertionError: Timed out retrying after 4000ms: Expected to find content: 'Invalid credentials. Please try again.' but never did.",
+                "estack": "AssertionError: Timed out retrying after 4000ms: Expected to find content: 'Invalid credentials. Please try again.' but never did.\n    at Context.eval (webpack://cypress_mocha_framework/./cypress/e2e/tests/loginTest.cy.js:45:60)",
+                "diff": null
+              },
+              "uuid": "f7b27435-574c-4d77-b79f-2660971dea3c",
+              "parentUUID": "572a7a2a-b945-4cdd-8a2d-9b51b14d1178",
+              "isHook": false,
+              "skipped": false
+            }
+          ],
+          "suites": [],
+          "passes": [
+            "651611f8-7991-4a15-9e67-0deed08f035e"
+          ],
+          "failures": [
+            "e97d95a0-476a-45aa-bff7-4c7fad1a5f6e",
+            "1fd3d09b-8b72-4549-9b71-b6a148db7707",
+            "f7b27435-574c-4d77-b79f-2660971dea3c"
+          ],
+          "pending": [],
+          "skipped": [],
+          "duration": 57272,
+          "root": false,
+          "rootEmpty": false,
+          "_timeout": 2000
+        }
+      ],
+      "passes": [],
+      "failures": [],
+      "pending": [],
+      "skipped": [],
+      "duration": 0,
+      "root": true,
+      "rootEmpty": true,
+      "_timeout": 2000
+    }
+  ],
+  "meta": {
+    "mocha": {
+      "version": "7.2.0"
+    },
+    "mochawesome": {
+      "options": {
+        "quiet": false,
+        "reportFilename": "mochawesome",
+        "saveHtml": false,
+        "saveJson": true,
+        "consoleReporter": "spec",
+        "useInlineDiffs": false,
+        "code": true
+      },
+      "version": "7.1.4"
+    },
+    "marge": {
+      "options": {
+        "reportDir": "cypress/reports",
+        "overwrite": false,
+        "html": false,
+        "json": true
+      },
+      "version": "6.3.0"
+    }
+  }
+}
