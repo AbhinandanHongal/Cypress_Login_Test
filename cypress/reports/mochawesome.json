@@ -5,9 +5,9 @@
     "passes": 0,
     "pending": 0,
     "failures": 1,
-    "start": "2025-11-06T06:07:50.349Z",
-    "end": "2025-11-06T06:08:38.716Z",
-    "duration": 48367,
+    "start": "2025-11-06T06:33:23.246Z",
+    "end": "2025-11-06T06:34:11.695Z",
+    "duration": 48449,
     "testsRegistered": 1,
     "passPercent": 0,
     "pendingPercent": 0,
@@ -18,7 +18,7 @@
   },
   "results": [
     {
-      "uuid": "d6976071-83e6-40da-8955-08f4c3f0b461",
+      "uuid": "e2995913-fda1-4ed6-a09f-02b8caf0cbbf",
       "title": "",
       "fullFile": "cypress\\e2e\\tests\\orderSimsTest.cy.js",
       "file": "cypress\\e2e\\tests\\orderSimsTest.cy.js",
@@ -27,7 +27,7 @@
       "tests": [],
       "suites": [
         {
-          "uuid": "d1445264-59a4-4f20-8aa2-94280f2d023d",
+          "uuid": "940fe8d5-9028-41ae-b5dc-9e3a241bd255",
           "title": "Order Sims - Bulk SIM Ordering",
           "fullFile": "",
           "file": "",
@@ -38,7 +38,7 @@
               "title": "should successfully place a bulk SIM order",
               "fullTitle": "Order Sims - Bulk SIM Ordering should successfully place a bulk SIM order",
               "timedOut": null,
-              "duration": 48324,
+              "duration": 48390,
               "state": "failed",
               "speed": null,
               "pass": false,
@@ -51,8 +51,8 @@
                 "estack": "Error: Timed out retrying after 30000ms: Modal not visible yet\n    at Context.eval (webpack://cypress_mocha_framework/./cypress/e2e/pages/orderSimsPage.js:113:20)\n    at <unknown> (https://retail-staging.48.ie/__cypress/runner/cypress_runner.js:121664:17)\n    at tryCatcher (https://retail-staging.48.ie/__cypress/runner/cypress_runner.js:1777:23)\n    at Promise.attempt.Promise.try (https://retail-staging.48.ie/__cypress/runner/cypress_runner.js:4285:29)\n    at Context.shouldFnWithCallback (https://retail-staging.48.ie/__cypress/runner/cypress_runner.js:121661:66)\n    at Context.shouldFn (https://retail-staging.48.ie/__cypress/runner/cypress_runner.js:121704:37)\n    at Context.should (https://retail-staging.48.ie/__cypress/runner/cypress_runner.js:121823:23)\n    at <unknown> (https://retail-staging.48.ie/__cypress/runner/cypress_runner.js:150511:39)\n    at assertions (https://retail-staging.48.ie/__cypress/runner/cypress_runner.js:150759:16)\n    at tryCatcher (https://retail-staging.48.ie/__cypress/runner/cypress_runner.js:1777:23)",
                 "diff": null
               },
-              "uuid": "bb72d829-a718-4816-897b-bb3c393ce823",
-              "parentUUID": "d1445264-59a4-4f20-8aa2-94280f2d023d",
+              "uuid": "1dd97101-75c5-4f7e-8e2c-38f29fdd6538",
+              "parentUUID": "940fe8d5-9028-41ae-b5dc-9e3a241bd255",
               "isHook": false,
               "skipped": false
             }
@@ -60,11 +60,11 @@
           "suites": [],
           "passes": [],
           "failures": [
-            "bb72d829-a718-4816-897b-bb3c393ce823"
+            "1dd97101-75c5-4f7e-8e2c-38f29fdd6538"
           ],
           "pending": [],
           "skipped": [],
-          "duration": 48324,
+          "duration": 48390,
           "root": false,
           "rootEmpty": false,
           "_timeout": 2000
