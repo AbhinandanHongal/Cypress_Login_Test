@@ -57,7 +57,8 @@ jobs:
         run: npm install
 
       - name: Run Cypress tests
-        run: npx cypress run || true
+        run: npx cypress run --config baseUrl="https://www.google.com"
+        continue-on-error: true
 
       - name: Verify artifact contents
         run: |
