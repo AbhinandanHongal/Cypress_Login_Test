@@ -10,7 +10,7 @@ module.exports = defineConfig({
     json: true,
   },
   e2e: {
-    baseUrl: "https://retail-staging.48.ie",   // change to your app URL
+   // baseUrl: "https://retail-staging.48.ie/log-in",   // change to your app URL
     video: true,
     screenshotOnRunFailure: true,
     setupNodeEvents(on, config) {
