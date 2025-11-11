@@ -103,8 +103,6 @@ jobs:
       - name: Upload reports to S3
         run: |
           aws s3 cp cypress/reports s3://abhinandan-cypress-results/reports/ --recursive
-          aws s3 cp cypress/screenshots s3://abhinandan-cypress-results/screenshots/ --recursive
-          aws s3 cp cypress/videos s3://abhinandan-cypress-results/videos/ --recursive
 
 
 
