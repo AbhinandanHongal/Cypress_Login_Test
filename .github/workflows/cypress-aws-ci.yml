@@ -161,5 +161,5 @@ jobs:
       - name: Send SNS notification
         run: |
           aws sns publish \
-            --topic-arn arn:aws:sns:us-east-1:${{ secrets.AWS_ACCOUNT_ID }}:abhinandan-cypress-sns \
+            --topic-arn arn:aws:sns:ap-south-2:${{ secrets.AWS_ACCOUNT_ID }}:abhinandan-cypress-sns \
             --message "✅ Cypress CI/CD Pipeline Completed Successfully. Reports uploaded to S3 and CodeBuild triggered."
