@@ -103,10 +103,23 @@ jobs:
 
       - name: Upload reports to S3
         run: |
-          aws s3 cp ./cypress/reports s3://abhinandan-cypress-results/reports/ --recursive
-          aws s3 cp ./cypress/reports/screenshots s3://abhinandan-cypress-results/screenshots/ --recursive
-          aws s3 cp ./cypress/reports/videos s3://abhinandan-cypress-results/videos/ --recursive
+         if [ -d "reports" ]; then
+         aws s3 cp reports s3://abhinandan-cypress-results/reports/ --recursive
+         else
+         echo "reports folder not found"
+         fi
 
+         if [ -d "screenshots" ]; then
+         aws s3 cp screenshots s3://abhinandan-cypress-results/screenshots/ --recursive
+         else
+         echo "screenshots folder not found"
+         fi
+
+         if [ -d "videos" ]; then
+         aws s3 cp videos s3://abhinandan-cypress-results/videos/ --recursive
+         else
+         echo "videos folder not found"
+         fi
 
   # -----------------------------
   # 4. Trigger AWS CodeBuild
