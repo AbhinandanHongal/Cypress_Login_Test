@@ -6,7 +6,6 @@ on:
       - main
   pull_request:
 
-# Permissions required for CodeQL
 permissions:
   contents: read
   security-events: write
@@ -60,7 +59,7 @@ jobs:
       - name: Run Cypress tests
         run: npx cypress run || true
 
-      - name: Verify artifact
+      - name: Verify artifact contents
         run: |
           echo "Listing contents of cypress/reports directory"
           ls -R cypress/reports || true
@@ -91,8 +90,8 @@ jobs:
 
       - name: Verify artifact after download
         run: |
-          echo "Listing contents of downloaded artifact"
-          ls -R cypress-reports || true
+          echo "Listing contents"
+          ls -R
 
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v2
@@ -139,12 +138,12 @@ jobs:
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v2
         with:
-        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-        aws-region: ap-south-1
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ap-south-1
 
       - name: Send SNS notification
         run: |
           aws sns publish \
-            --topic-arn arn:aws:sns:ap-south-1:YOUR_ACCOUNT_ID:YourSNSTopic \
-            --message "✅ Cypress CI/CD Pipeline Completed Successfully. Reports uploaded to S3. CodeBuild triggered."
+            --topic-arn arn:aws:sns:ap-south-1:${{ secrets.AWS_ACCOUNT_ID }}:abhinandan-cypress-sns \
+            --message "✅ Cypress CI/CD Pipeline Completed Successfully. Reports uploaded to S3 and CodeBuild triggered."
