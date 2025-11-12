@@ -73,6 +73,10 @@ jobs:
             cypress/reports/
             cypress/screenshots/
             cypress/videos/
+      - name: Merge and Generate Mochawesome Report
+        run: |
+         npx mochawesome-merge cypress/reports/.jsons/*.json > cypress/reports/output.json
+         npx marge cypress/reports/output.json --reportDir cypress/reports --reportFilename index.html
 
 
   # -----------------------------
