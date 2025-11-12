@@ -103,23 +103,24 @@ jobs:
 
       - name: Upload reports to S3
         run: |
-         if [ -d "reports" ]; then
-         aws s3 cp reports s3://abhinandan-cypress-results/reports/ --recursive
-         else
-         echo "reports folder not found"
-         fi
+          if [ -d "reports" ]; then
+            aws s3 cp reports s3://abhinandan-cypress-results/reports/ --recursive
+          else
+            echo "reports folder not found"
+          fi
 
-         if [ -d "screenshots" ]; then
-         aws s3 cp screenshots s3://abhinandan-cypress-results/screenshots/ --recursive
-         else
-         echo "screenshots folder not found"
-         fi
+          if [ -d "screenshots" ]; then
+            aws s3 cp screenshots s3://abhinandan-cypress-results/screenshots/ --recursive
+          else
+            echo "screenshots folder not found"
+          fi
 
-         if [ -d "videos" ]; then
-         aws s3 cp videos s3://abhinandan-cypress-results/videos/ --recursive
-         else
-         echo "videos folder not found"
-         fi
+          if [ -d "videos" ]; then
+            aws s3 cp videos s3://abhinandan-cypress-results/videos/ --recursive
+          else
+            echo "videos folder not found"
+          fi
+
 
   # -----------------------------
   # 4. Trigger AWS CodeBuild
@@ -158,18 +159,37 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ap-south-2
 
-      - name: Generate S3 pre-signed URL for report
-        id: generate_url
+      - name: Capture Run Start and End Time
+        id: capture_time
         run: |
-              url=$(aws s3 presign s3://abhinandan-cypress-results/reports/index.html --expires-in 604800)
-              echo "REPORT_URL=$url" >> $GITHUB_ENV      
+          echo "START_TIME=$(date -u -d "${{ github.event.head_commit.timestamp }}" '+%Y-%m-%d %H:%M:%S UTC')" >> $GITHUB_ENV
+          echo "END_TIME=$(date -u '+%Y-%m-%d %H:%M:%S UTC')" >> $GITHUB_ENV
+          start=$(date -d "${{ github.event.head_commit.timestamp }}" +%s)
+          end=$(date +%s)
+          duration=$((end - start))
+          echo "DURATION=${duration}s" >> $GITHUB_ENV
+
+      - name: Find latest Cypress HTML report and generate pre-signed URL
+        id: find_latest
+        run: |
+          echo "Finding latest HTML report in S3 bucket..."
+          latest_file=$(aws s3api list-objects-v2 \
+            --bucket abhinandan-cypress-results \
+            --prefix reports/ \
+            --query 'reverse(sort_by(Contents, &LastModified))[0].Key' \
+            --output text)
+
+          if [ "$latest_file" == "None" ] || [ -z "$latest_file" ]; then
+            echo "No HTML report found in S3. Using default index.html path."
+            latest_file="reports/index.html"
+          fi
+
+          echo "Latest report found: $latest_file"
+          url=$(aws s3 presign s3://abhinandan-cypress-results/$latest_file --expires-in 604800)
+          echo "REPORT_URL=$url" >> $GITHUB_ENV
 
       - name: Send SNS notification
         run: |
           aws sns publish \
-            --topic-arn arn:aws:sns:ap-south-2:${{ secrets.AWS_ACCOUNT_ID }}:abhinandan-cypress-sns \
-            --message "✅ Cypress CI/CD Pipeline Completed Successfully. Reports uploaded to S3 and CodeBuild triggered."
-
-        Cypress HTML Report: $REPORT_URL
-
-           Reports uploaded to S3 and CodeBuild triggered successfully."
+            --topic-arn arn:aws:sns:ap-south-2:136905788804:abhinandan-cypress-sns \
+            --message "$(echo -e '✅ Cypress CI/CD Pipeline Completed Successfully!\n\n📅 Start Time: '$START_TIME'\n🕒 End Time: '$END_TIME'\n⏱️ Total Duration: '$DURATION'\n\n📄 Cypress HTML Report:\n'$REPORT_URL'\n\nReports have been uploaded to S3 and CodeBuild was triggered successfully.')"
