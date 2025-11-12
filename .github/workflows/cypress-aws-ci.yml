@@ -158,6 +158,12 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ap-south-2
 
+      - name: Generate S3 pre-signed URL for report
+        id: generate_url
+        run: |
+              url=$(aws s3 presign s3://abhinandan-cypress-results/reports/index.html --expires-in 604800)
+              echo "REPORT_URL=$url" >> $GITHUB_ENV      
+
       - name: Send SNS notification
         run: |
           aws sns publish \
