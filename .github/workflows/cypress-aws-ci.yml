@@ -99,7 +99,7 @@ jobs:
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: us-east-1
+          aws-region: us-south-2
 
       - name: Upload reports to S3
         run: |
@@ -156,10 +156,10 @@ jobs:
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: us-east-1
+          aws-region: ap-south-2
 
       - name: Send SNS notification
         run: |
           aws sns publish \
-            --topic-arn arn:aws:sns:ap-south-1:${{ secrets.AWS_ACCOUNT_ID }}:abhinandan-cypress-sns \
+            --topic-arn arn:aws:sns:ap-south-2:${{ secrets.AWS_ACCOUNT_ID }}:abhinandan-cypress-sns \
             --message "✅ Cypress CI/CD Pipeline Completed Successfully. Reports uploaded to S3 and CodeBuild triggered."
