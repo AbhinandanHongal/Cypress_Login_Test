@@ -170,6 +170,6 @@ jobs:
             --topic-arn arn:aws:sns:ap-south-2:${{ secrets.AWS_ACCOUNT_ID }}:abhinandan-cypress-sns \
             --message "✅ Cypress CI/CD Pipeline Completed Successfully. Reports uploaded to S3 and CodeBuild triggered."
 
-    📄 Cypress HTML Report: $REPORT_URL
+        Cypress HTML Report: $REPORT_URL
 
            Reports uploaded to S3 and CodeBuild triggered successfully."
