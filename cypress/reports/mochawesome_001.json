@@ -5,9 +5,9 @@
     "passes": 0,
     "pending": 0,
     "failures": 1,
-    "start": "2025-10-28T13:42:04.162Z",
-    "end": "2025-10-28T13:42:04.513Z",
-    "duration": 351,
+    "start": "2025-11-13T10:00:19.681Z",
+    "end": "2025-11-13T10:00:25.482Z",
+    "duration": 5801,
     "testsRegistered": 1,
     "passPercent": 0,
     "pendingPercent": 0,
@@ -18,7 +18,7 @@
   },
   "results": [
     {
-      "uuid": "c9cb3b39-5b4a-4177-b497-38b5d6799aa5",
+      "uuid": "cae2966a-4bb5-4768-8126-9dec7e9a9a1d",
       "title": "",
       "fullFile": "cypress\\e2e\\tests\\orderSimsTest.cy.js",
       "file": "cypress\\e2e\\tests\\orderSimsTest.cy.js",
@@ -27,7 +27,7 @@
       "tests": [],
       "suites": [
         {
-          "uuid": "c306907d-fbae-45f9-b30b-05e9ab65affc",
+          "uuid": "bb93cdfa-cbea-4031-93a3-50b21da4d880",
           "title": "Order Sims - Bulk SIM Ordering",
           "fullFile": "",
           "file": "",
@@ -38,21 +38,21 @@
               "title": "should successfully place a bulk SIM order",
               "fullTitle": "Order Sims - Bulk SIM Ordering should successfully place a bulk SIM order",
               "timedOut": null,
-              "duration": 279,
+              "duration": 5742,
               "state": "failed",
               "speed": null,
               "pass": false,
               "fail": true,
               "pending": false,
-              "context": "[\n  {\n    \"title\": \"cypress-mochawesome-reporter-videos-failed\",\n    \"value\": \"cypress\\\\e2e\\\\tests\\\\orderSimsTest.cy.js\"\n  },\n  {\n    \"title\": \"cypress-mochawesome-reporter-screenshots\",\n    \"value\": [\n      [\n        \"\\\\orderSimsTest.cy.js\\\\Order Sims - Bulk SIM Ordering -- should successfully place a bulk SIM order (failed).png\"\n      ]\n    ]\n  }\n]",
-              "code": "// Step 1: Login first\n_loginPage.default.visit();\n_loginPage.default.enterEmail(this.data.validUser.email);\n_loginPage.default.enterPassword(this.data.validUser.password);\n_loginPage.default.clickSignIn();\ncy.contains('Order History', {\n  timeout: 20000\n}).should('be.visible');\n// Step 2: Go to Order Sims page\n_orderSimsPage.default.visit();\ncy.url().should('include', '/order-sims');\n// Step 3: Fill in order details\n_orderSimsPage.default.enterRetailStoreName(this.data.orderSims.storeName);\n_orderSimsPage.default.enterDeliveryAddress(this.data.orderSims.deliveryAddress);\n_orderSimsPage.default.enterNumberOfSims(this.data.orderSims.sims);\n//OrderSimsPage.selectShippingType(this.data.orderSims.shippingType);\n_orderSimsPage.default.enterMessage(this.data.orderSims.message);\n// Step 4: Submit the order\n_orderSimsPage.default.clickOrderSims();\n// Step 5: Verify success message\n_orderSimsPage.default.verifyOrderSuccess();\n// Step 6: Verify order appears in Order History\n_orderSimsPage.default.verifyOrderInHistory(this.data.orderSims.storeName, this.data.orderSims.sims, this.data.orderSims.status);",
+              "context": null,
+              "code": "// Step 1: Login\n_loginPage.default.visit();\n_loginPage.default.enterEmail(testData.validUser.email);\n_loginPage.default.enterPassword(testData.validUser.password);\n_loginPage.default.showPassword();\n_loginPage.default.clickSignIn();\n// Wait until dashboard visible\ncy.contains('Order History', {\n  timeout: 20000\n}).should('be.visible');\n// Step 2: Go to Order Sims page\n_orderSimsPage.default.visit();\ncy.url().should('include', '/order-sims');\n// Step 3: Fill order details\n_orderSimsPage.default.enterRetailStoreName(testData.orderSims.storeName);\n_orderSimsPage.default.enterDeliveryAddress(testData.orderSims.deliveryAddress);\n_orderSimsPage.default.enterNumberOfSims(testData.orderSims.sims);\n_orderSimsPage.default.enterMessage(testData.orderSims.message);\n// Step 4: Submit order\n_orderSimsPage.default.clickOrderSims();\ncy.wait(5000); // wait for 5 seconds for popup to appear\n// Step 5: Handle popup\n_orderSimsPage.default.verifyOrderPopupAndClose();\n// Step 6: Navigate to order history\n_orderSimsPage.default.goToOrderHistory();\n// Step 7: Verify order appears\n_orderSimsPage.default.verifyOrderInHistory(testData.orderSims.storeName, testData.orderSims.sims, testData.orderSims.status);",
               "err": {
-                "message": "TypeError: Cannot read properties of undefined (reading 'storeName')",
-                "estack": "TypeError: Cannot read properties of undefined (reading 'storeName')\n    at Context.eval (webpack://cypress_mocha_framework/./cypress/e2e/tests/orderSimsTest.cy.js:25:59)\n    at runnable.fn (https://retail-staging.48.ie/__cypress/runner/cypress_runner.js:145850:19)\n    at callFn (https://retail-staging.48.ie/__cypress/runner/cypress_runner.js:164942:21)\n    at Runnable.run (https://retail-staging.48.ie/__cypress/runner/cypress_runner.js:164929:7)\n    at <unknown> (https://retail-staging.48.ie/__cypress/runner/cypress_runner.js:171024:30)\n    at PassThroughHandlerContext.finallyHandler (https://retail-staging.48.ie/__cypress/runner/cypress_runner.js:4042:23)\n    at PassThroughHandlerContext.tryCatcher (https://retail-staging.48.ie/__cypress/runner/cypress_runner.js:1777:23)\n    at Promise._settlePromiseFromHandler (https://retail-staging.48.ie/__cypress/runner/cypress_runner.js:1489:31)\n    at Promise._settlePromise (https://retail-staging.48.ie/__cypress/runner/cypress_runner.js:1546:18)",
+                "message": "AssertionError: Timed out retrying after 4000ms: Expected to find element: `input[formcontrolname=\"email\"]`, but never found it.",
+                "estack": "AssertionError: Timed out retrying after 4000ms: Expected to find element: `input[formcontrolname=\"email\"]`, but never found it.\n    at Object.emailInput (webpack://cypress_mocha_framework/./cypress/e2e/pages/loginPage.js:3:27)\n    at LoginPage.enterEmail (webpack://cypress_mocha_framework/./cypress/e2e/pages/loginPage.js:15:20)\n    at Context.eval (webpack://cypress_mocha_framework/./cypress/e2e/tests/orderSimsTest.cy.js:23:14)",
                 "diff": null
               },
-              "uuid": "d3d6876e-0eda-468a-870d-ff2a165a5b76",
-              "parentUUID": "c306907d-fbae-45f9-b30b-05e9ab65affc",
+              "uuid": "dd86d215-22a7-4f43-ad81-06238b115468",
+              "parentUUID": "bb93cdfa-cbea-4031-93a3-50b21da4d880",
               "isHook": false,
               "skipped": false
             }
@@ -60,11 +60,11 @@
           "suites": [],
           "passes": [],
           "failures": [
-            "d3d6876e-0eda-468a-870d-ff2a165a5b76"
+            "dd86d215-22a7-4f43-ad81-06238b115468"
           ],
           "pending": [],
           "skipped": [],
-          "duration": 279,
+          "duration": 5742,
           "root": false,
           "rootEmpty": false,
           "_timeout": 2000
@@ -82,7 +82,7 @@
   ],
   "meta": {
     "mocha": {
-      "version": "7.2.0"
+      "version": "7.0.1"
     },
     "mochawesome": {
       "options": {
@@ -103,7 +103,7 @@
         "html": false,
         "json": true
       },
-      "version": "6.3.0"
+      "version": "6.3.2"
     }
   }
 }

@@ -1,30 +1,27 @@
 {
   "name": "cypress_mocha_framework",
   "version": "1.0.0",
-  "description": "",
+  "description": "Cypress + Mochawesome reporting integrated framework",
   "main": "index.js",
   "scripts": {
-    "test": "npx cypress run",
-    "open": "npx cypress open",
-    "login:report": "npx cypress run --spec cypress/e2e/tests/loginTest.cy.js --reporter mochawesome --reporter-options reportDir=cypress/reports,overwrite=true,html=false,json=true && npx mochawesome-merge cypress/reports/*.json > cypress/reports/report.json && npx mochawesome-report-generator cypress/reports/report.json -o cypress/reports/html",
-    "cypress:run": "cypress run --reporter mochawesome --reporter-options reportDir=cypress/reports,overwrite=true,html=false,json=true",
-    "merge-reports": "npx mochawesome-merge cypress/reports/.jsons/*.json > cypress/reports/output.json && npx marge cypress/reports/output.json --reportDir cypress/reports --reportFilename index.html",
-    "posttest": "npm run merge-reports",
-    "generate-report": "npx mochawesome-report-generator cypress/reports/mochawesome.json -f report -o cypress/reports/html",
-    "open-report": "start cypress/reports/html/report.html",
-    "test:report": "npm run cypress:run && npm run generate-report",
-    "clean": "rimraf cypress/reports cypress/screenshots cypress/videos",
-    "test:clean": "npm run clean && npx cypress run"
+    "clean": "npx rimraf cypress/reports cypress/screenshots cypress/videos",
+    "cypress:run": "npx cypress run --reporter mochawesome --reporter-options reportDir=cypress/reports,overwrite=false,html=false,json=true",
+    "merge-reports": "node merge-reports.cjs",
+    "generate-report": "npx mochawesome-report-generator cypress/reports/output.json -f index -o cypress/reports",
+    "open-report": "start cypress/reports/index.html",
+    "test:report": "npm run clean && npm run cypress:run && npm run merge-reports && npm run generate-report && npm run open-report",
+    "test:clean": "npm run clean && npm run test:report",
+    "open": "npx cypress open"
   },
-  "keywords": [],
-  "author": "",
+  "keywords": ["cypress", "automation", "mochawesome", "reporting"],
+  "author": "Abhinandan Hongal",
   "license": "ISC",
   "devDependencies": {
-    "cypress": "^13.12.0",
-    "cypress-mochawesome-reporter": "^4.0.2",
+    "cypress": "^13.17.0",
     "marge": "^1.0.1",
     "mochawesome": "^7.1.4",
     "mochawesome-merge": "^5.0.0",
-    "mochawesome-report-generator": "^6.3.0"
+    "mochawesome-report-generator": "^6.3.2",
+    "rimraf": "^5.0.10"
   }
 }

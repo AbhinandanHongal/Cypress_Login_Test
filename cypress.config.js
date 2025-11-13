@@ -1,24 +1,23 @@
 const { defineConfig } = require("cypress");
-const path = require("path");
 
 module.exports = defineConfig({
-  reporter: 'cypress-mochawesome-reporter',
+  reporter: "mochawesome",
   reporterOptions: {
     reportDir: "cypress/reports",
     overwrite: false,
-    html: true, // ✅ ensures HTML files are created
+    html: false, // HTML will be generated manually
     json: true,
   },
   e2e: {
-    baseUrl: "https://retail-staging.48.ie/log-in",   // change to your app URL
+    baseUrl: "https://retail-staging.48.ie/log-in",
     video: true,
     screenshotOnRunFailure: true,
+    specPattern: "cypress/e2e/tests/**/*.cy.js",
+    videosFolder: "cypress/reports/videos",
+    screenshotsFolder: "cypress/reports/screenshots",
     setupNodeEvents(on, config) {
-      require("cypress-mochawesome-reporter/plugin")(on);
+      // No plugins loaded — fully clean setup
       return config;
     },
-    specPattern: "cypress/e2e/tests/**/*.cy.js",
-    videosFolder: "cypress/reports/videos",        // ✅ video folder
-    screenshotsFolder: "cypress/reports/screenshots", // ✅ screenshot folder
   },
 });

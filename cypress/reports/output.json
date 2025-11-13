@@ -1,22 +1,84 @@
 {
   "stats": {
-    "suites": 1,
-    "tests": 4,
+    "suites": 2,
+    "tests": 5,
     "passes": 0,
     "pending": 0,
-    "failures": 4,
-    "start": "2025-11-13T09:59:31.702Z",
-    "end": "2025-11-13T10:00:16.432Z",
-    "duration": 44730,
-    "testsRegistered": 4,
+    "failures": 5,
+    "testsRegistered": 5,
     "passPercent": 0,
     "pendingPercent": 0,
     "other": 0,
     "hasOther": false,
     "skipped": 0,
-    "hasSkipped": false
+    "hasSkipped": false,
+    "start": "2025-11-13T09:59:31.702Z",
+    "end": "2025-11-13T10:00:25.482Z",
+    "duration": 53780
   },
   "results": [
+    {
+      "uuid": "cae2966a-4bb5-4768-8126-9dec7e9a9a1d",
+      "title": "",
+      "fullFile": "cypress\\e2e\\tests\\orderSimsTest.cy.js",
+      "file": "cypress\\e2e\\tests\\orderSimsTest.cy.js",
+      "beforeHooks": [],
+      "afterHooks": [],
+      "tests": [],
+      "suites": [
+        {
+          "uuid": "bb93cdfa-cbea-4031-93a3-50b21da4d880",
+          "title": "Order Sims - Bulk SIM Ordering",
+          "fullFile": "",
+          "file": "",
+          "beforeHooks": [],
+          "afterHooks": [],
+          "tests": [
+            {
+              "title": "should successfully place a bulk SIM order",
+              "fullTitle": "Order Sims - Bulk SIM Ordering should successfully place a bulk SIM order",
+              "timedOut": null,
+              "duration": 5742,
+              "state": "failed",
+              "speed": null,
+              "pass": false,
+              "fail": true,
+              "pending": false,
+              "context": null,
+              "code": "// Step 1: Login\n_loginPage.default.visit();\n_loginPage.default.enterEmail(testData.validUser.email);\n_loginPage.default.enterPassword(testData.validUser.password);\n_loginPage.default.showPassword();\n_loginPage.default.clickSignIn();\n// Wait until dashboard visible\ncy.contains('Order History', {\n  timeout: 20000\n}).should('be.visible');\n// Step 2: Go to Order Sims page\n_orderSimsPage.default.visit();\ncy.url().should('include', '/order-sims');\n// Step 3: Fill order details\n_orderSimsPage.default.enterRetailStoreName(testData.orderSims.storeName);\n_orderSimsPage.default.enterDeliveryAddress(testData.orderSims.deliveryAddress);\n_orderSimsPage.default.enterNumberOfSims(testData.orderSims.sims);\n_orderSimsPage.default.enterMessage(testData.orderSims.message);\n// Step 4: Submit order\n_orderSimsPage.default.clickOrderSims();\ncy.wait(5000); // wait for 5 seconds for popup to appear\n// Step 5: Handle popup\n_orderSimsPage.default.verifyOrderPopupAndClose();\n// Step 6: Navigate to order history\n_orderSimsPage.default.goToOrderHistory();\n// Step 7: Verify order appears\n_orderSimsPage.default.verifyOrderInHistory(testData.orderSims.storeName, testData.orderSims.sims, testData.orderSims.status);",
+              "err": {
+                "message": "AssertionError: Timed out retrying after 4000ms: Expected to find element: `input[formcontrolname=\"email\"]`, but never found it.",
+                "estack": "AssertionError: Timed out retrying after 4000ms: Expected to find element: `input[formcontrolname=\"email\"]`, but never found it.\n    at Object.emailInput (webpack://cypress_mocha_framework/./cypress/e2e/pages/loginPage.js:3:27)\n    at LoginPage.enterEmail (webpack://cypress_mocha_framework/./cypress/e2e/pages/loginPage.js:15:20)\n    at Context.eval (webpack://cypress_mocha_framework/./cypress/e2e/tests/orderSimsTest.cy.js:23:14)",
+                "diff": null
+              },
+              "uuid": "dd86d215-22a7-4f43-ad81-06238b115468",
+              "parentUUID": "bb93cdfa-cbea-4031-93a3-50b21da4d880",
+              "isHook": false,
+              "skipped": false
+            }
+          ],
+          "suites": [],
+          "passes": [],
+          "failures": [
+            "dd86d215-22a7-4f43-ad81-06238b115468"
+          ],
+          "pending": [],
+          "skipped": [],
+          "duration": 5742,
+          "root": false,
+          "rootEmpty": false,
+          "_timeout": 2000
+        }
+      ],
+      "passes": [],
+      "failures": [],
+      "pending": [],
+      "skipped": [],
+      "duration": 0,
+      "root": true,
+      "rootEmpty": true,
+      "_timeout": 2000
+    },
     {
       "uuid": "4ab3ebb8-9d4f-4b52-8f6c-ceb021165442",
       "title": "",
