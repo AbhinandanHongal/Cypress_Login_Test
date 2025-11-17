@@ -5,9 +5,9 @@
     "passes": 0,
     "pending": 0,
     "failures": 1,
-    "start": "2025-11-13T10:00:19.681Z",
-    "end": "2025-11-13T10:00:25.482Z",
-    "duration": 5801,
+    "start": "2025-11-17T07:30:56.045Z",
+    "end": "2025-11-17T07:31:05.003Z",
+    "duration": 8958,
     "testsRegistered": 1,
     "passPercent": 0,
     "pendingPercent": 0,
@@ -18,7 +18,7 @@
   },
   "results": [
     {
-      "uuid": "cae2966a-4bb5-4768-8126-9dec7e9a9a1d",
+      "uuid": "57a04493-6f31-438f-98bd-387f3b8de414",
       "title": "",
       "fullFile": "cypress\\e2e\\tests\\orderSimsTest.cy.js",
       "file": "cypress\\e2e\\tests\\orderSimsTest.cy.js",
@@ -27,7 +27,7 @@
       "tests": [],
       "suites": [
         {
-          "uuid": "bb93cdfa-cbea-4031-93a3-50b21da4d880",
+          "uuid": "b4622307-ecb0-41d0-a9d1-9e0af18734a5",
           "title": "Order Sims - Bulk SIM Ordering",
           "fullFile": "",
           "file": "",
@@ -38,7 +38,7 @@
               "title": "should successfully place a bulk SIM order",
               "fullTitle": "Order Sims - Bulk SIM Ordering should successfully place a bulk SIM order",
               "timedOut": null,
-              "duration": 5742,
+              "duration": 8796,
               "state": "failed",
               "speed": null,
               "pass": false,
@@ -47,12 +47,12 @@
               "context": null,
               "code": "// Step 1: Login\n_loginPage.default.visit();\n_loginPage.default.enterEmail(testData.validUser.email);\n_loginPage.default.enterPassword(testData.validUser.password);\n_loginPage.default.showPassword();\n_loginPage.default.clickSignIn();\n// Wait until dashboard visible\ncy.contains('Order History', {\n  timeout: 20000\n}).should('be.visible');\n// Step 2: Go to Order Sims page\n_orderSimsPage.default.visit();\ncy.url().should('include', '/order-sims');\n// Step 3: Fill order details\n_orderSimsPage.default.enterRetailStoreName(testData.orderSims.storeName);\n_orderSimsPage.default.enterDeliveryAddress(testData.orderSims.deliveryAddress);\n_orderSimsPage.default.enterNumberOfSims(testData.orderSims.sims);\n_orderSimsPage.default.enterMessage(testData.orderSims.message);\n// Step 4: Submit order\n_orderSimsPage.default.clickOrderSims();\ncy.wait(5000); // wait for 5 seconds for popup to appear\n// Step 5: Handle popup\n_orderSimsPage.default.verifyOrderPopupAndClose();\n// Step 6: Navigate to order history\n_orderSimsPage.default.goToOrderHistory();\n// Step 7: Verify order appears\n_orderSimsPage.default.verifyOrderInHistory(testData.orderSims.storeName, testData.orderSims.sims, testData.orderSims.status);",
               "err": {
-                "message": "AssertionError: Timed out retrying after 4000ms: Expected to find element: `input[formcontrolname=\"email\"]`, but never found it.",
-                "estack": "AssertionError: Timed out retrying after 4000ms: Expected to find element: `input[formcontrolname=\"email\"]`, but never found it.\n    at Object.emailInput (webpack://cypress_mocha_framework/./cypress/e2e/pages/loginPage.js:3:27)\n    at LoginPage.enterEmail (webpack://cypress_mocha_framework/./cypress/e2e/pages/loginPage.js:15:20)\n    at Context.eval (webpack://cypress_mocha_framework/./cypress/e2e/tests/orderSimsTest.cy.js:23:14)",
+                "message": "AssertionError: Timed out retrying after 4000ms: expected 'https://retail-staging.48.ie/' to include '/order-sims'",
+                "estack": "AssertionError: Timed out retrying after 4000ms: expected 'https://retail-staging.48.ie/' to include '/order-sims'\n    at Context.eval (webpack://cypress_mocha_framework/./cypress/e2e/tests/orderSimsTest.cy.js:33:13)",
                 "diff": null
               },
-              "uuid": "dd86d215-22a7-4f43-ad81-06238b115468",
-              "parentUUID": "bb93cdfa-cbea-4031-93a3-50b21da4d880",
+              "uuid": "82ac69e6-87d3-430a-86c5-97549d5d6c66",
+              "parentUUID": "b4622307-ecb0-41d0-a9d1-9e0af18734a5",
               "isHook": false,
               "skipped": false
             }
@@ -60,11 +60,11 @@
           "suites": [],
           "passes": [],
           "failures": [
-            "dd86d215-22a7-4f43-ad81-06238b115468"
+            "82ac69e6-87d3-430a-86c5-97549d5d6c66"
           ],
           "pending": [],
           "skipped": [],
-          "duration": 5742,
+          "duration": 8796,
           "root": false,
           "rootEmpty": false,
           "_timeout": 2000

@@ -1,14 +1,14 @@
 class LoginPage {
     elements = {
-      emailInput: () => cy.get('input[formcontrolname="email"]')      ,
-      passwordInput: () => cy.get('input[formcontrolname="password"]')  ,
-      showpasswordButton: () => cy.get('#showPassword'),
-      signInButton: () => cy.get('button[type="submit"]'),
+      emailInput: () => cy.get('input[formcontrolname="email"]').should('be.visible'),
+      passwordInput: () => cy.get('input[formcontrolname="password"]').should('be.visible'),
+      showpasswordButton: () => cy.get('#showPassword', { timeout: 10000 }).should('be.visible'),
+      signInButton: () => cy.contains('button', 'Sign In', { timeout: 10000 }),
       dashboardTitle: () => cy.get('.sub-navbar-title')
     };
   
     visit() {
-      cy.visit('/login'); // full or relative path
+      cy.visit('https://retail-staging.48.ie/login'); // full or relative path
     }
   
     enterEmail(email) {

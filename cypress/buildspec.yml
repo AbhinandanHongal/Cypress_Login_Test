@@ -1,0 +1,16 @@
+version: 0.2
+
+phases:
+  install:
+    commands:
+      - echo Installing dependencies...
+      - npm install
+  build:
+    commands:
+      - echo Running Cypress tests...
+      - npx cypress run
+artifacts:
+  files:
+    - cypress/reports/**/*  # Example path where your test results are saved
+  name: cypress-test-artifacts
+  discard-paths: no

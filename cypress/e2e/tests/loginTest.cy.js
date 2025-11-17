@@ -24,7 +24,7 @@ describe('Login Tests - Retail', () => {
     LoginPage.enterPassword(this.data.invalidUser.password);
     LoginPage.showPassword();
     LoginPage.clickSignIn();
-    cy.contains('Invalid credentials').should('be.visible');
+    cy.contains('Invalid credentials. Please try again.').should('be.visible');
   });
 
   it('Login fails with empty email', function() {
@@ -33,7 +33,7 @@ describe('Login Tests - Retail', () => {
     LoginPage.enterEmail(this.data.emptyEmail.email);
     LoginPage.enterPassword(this.data.emptyEmail.password);
     LoginPage.clickSignIn();
-    cy.contains('Not a valid email').should('be.visible');
+    cy.contains('Email is required').should('be.visible');
   });
 
     it('Login fails with empty password', function() {
@@ -42,7 +42,7 @@ describe('Login Tests - Retail', () => {
       LoginPage.enterEmail(this.data.emptyPassword.email);
       LoginPage.enterPassword(this.data.emptyPassword.password);
       LoginPage.clickSignIn();
-      cy.contains('Invalid credentials. Please try again.').should('be.visible');
+      cy.contains('Password is required').should('be.visible');
     });
 
 });

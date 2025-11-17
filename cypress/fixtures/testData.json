@@ -6,7 +6,7 @@
   "orderSims": {
     "storeName": "Store 1",
     "deliveryAddress": "Lacey, Loon, Castlecomer, Co. Kilkenny",
-    "sims": "50",
+    "sims": "500",
     "message": "Please deliver ASAP",
     "status": "Pending"
   },

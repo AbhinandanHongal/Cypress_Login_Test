@@ -1,38 +1,35 @@
-// 🧩 Universal Mochawesome Merge (works for all versions)
+const mergeModule = require("mochawesome-merge");
 const fs = require("fs");
 const path = require("path");
 
-let mergeFn;
+console.log("🟢 Running merge-reports.cjs...");
 
-// 🔍 Try to load the merge function safely
-try {
-  const imported = require("mochawesome-merge");
-  mergeFn = imported.merge || imported.default || imported;
-} catch (err) {
-  console.error("❌ Failed to load mochawesome-merge:", err);
+const merge = mergeModule.merge;
+
+if (typeof merge !== "function") {
+  console.error("❌ merge is NOT a function. Actual export:", mergeModule);
   process.exit(1);
 }
 
+const reportsDir = path.join(__dirname, "cypress", "reports");
+let pattern = path.join(reportsDir, "mochawesome*.json").replace(/\\/g, "/");
+
+console.log("📂 Reports directory:", reportsDir);
+console.log("📘 Using file pattern:", pattern);
+
 (async () => {
   try {
-    console.log("🟢 Starting universal mochawesome merge...");
+    console.log("🔄 Merging JSON reports...");
 
-    const reportsDir = path.resolve("cypress", "reports");
-    const pattern = path.join(reportsDir, "mochawesome*.json").replace(/\\/g, "/");
-
-    console.log("📂 Reports directory:", reportsDir);
-    console.log("🔍 Using glob pattern:", pattern);
-
-    const mergedReport = await mergeFn({ files: [pattern] });
-
-    if (!mergedReport || Object.keys(mergedReport).length === 0) {
-      throw new Error("No data merged! Check JSON validity or file paths.");
-    }
+    const result = await merge({
+      files: [pattern],   // ✔ MUST be inside "files" array
+    });
 
     const outputFile = path.join(reportsDir, "output.json");
-    fs.writeFileSync(outputFile, JSON.stringify(mergedReport, null, 2));
-    console.log(`✅ Successfully created merged report: ${outputFile}`);
-  } catch (error) {
-    console.error("❌ Merge failed:", error);
+    fs.writeFileSync(outputFile, JSON.stringify(result, null, 2));
+
+    console.log("✅ Merged report saved at:", outputFile);
+  } catch (err) {
+    console.error("❌ Merge failed:", err);
   }
 })();
