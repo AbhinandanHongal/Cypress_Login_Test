@@ -6,7 +6,5 @@ cypress/screenshots/
 cypress/videos/
 
 # Logs and system files
-package-lock.json
 .DS_Store
 Thumbs.db
-.env
