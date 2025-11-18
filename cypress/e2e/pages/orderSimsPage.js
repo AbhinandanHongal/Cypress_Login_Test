@@ -18,7 +18,7 @@ class OrderSimsPage {
   
     // Visit Order Sims page directly
     visit() {
-      cy.visit('/order-sims');
+      cy.visit('https://retail-staging.48.ie/order-sims');
     }
   
     // Select retail store name from dropdown
@@ -100,41 +100,37 @@ class OrderSimsPage {
     }
   
     verifyOrderPopupAndClose() {
-        cy.log('🕒 Waiting for order confirmation popup...');
-      
-        // Wait for the modal container to exist in DOM
-        cy.get('#orderModal', { timeout: 30000 }).should('exist');
-      
-        // Retry until modal becomes visible (Bootstrap transition)
-        cy.get('#orderModal', { timeout: 30000 })
-          .should(($modal) => {
-            const isVisible = !$modal.is(':hidden');
-            if (!isVisible) {
-              throw new Error('Modal not visible yet');
-            }
-          });
-      
-        // Once modal is visible, verify message
-        cy.get('.dialog-description.mx-auto.text-white', { timeout: 20000 })
-          .should('be.visible')
-          .and('contain.text', "We've got your order");
-      
-        cy.log('✅ Order confirmation popup visible');
-      
-        // Click the OK button
-        cy.contains('button', /^ok$/i, { timeout: 10000 })
-          .should('be.visible')
-          .click({ force: true });
-      
-        cy.log('✅ Popup closed successfully');
-      }      
-      
+      cy.log('🕒 Waiting for order confirmation popup...');
     
-
-      goToOrderHistory() {
-        this.elements.orderHistoryLink().click();
-        cy.url().should('include', '/order-history');
-      }
+      cy.get('#orderModal', { timeout: 30000 })
+        .should('exist')
+        .and('be.visible');
+    
+      cy.get('#orderModal .dialog-description.mx-auto.text-white', { timeout: 20000 })
+        .should('be.visible')
+        .and('contain.text', "We've got your order");
+    
+      cy.log('✅ Order confirmation popup visible');
+    
+      cy.get('#orderModal')
+        .find('button')
+        .contains(/^ok$/i)
+        .should('be.visible')
+        .first()
+        .click({ force: true });
+    
+      cy.log('✅ OK button clicked, waiting for modal to close...');
+      cy.get('#orderModal', { timeout: 10000 }).should('not.exist');
+    
+      cy.log('✅ Popup closed successfully and removed from DOM');
+    }
+    
+    goToOrderHistory() {
+      cy.get('#orderModal', { timeout: 10000 }).should('not.exist');
+      this.elements.orderHistoryLink().should('be.visible').click({ force: true });
+      cy.url().should('include', '/order-history');
+      cy.log('✅ Navigated to Order History');
+    }
   
     verifyOrderInHistory(storeName, sims, status) {
       this.elements.orderHistoryTable()
@@ -142,7 +138,15 @@ class OrderSimsPage {
         .and('contain', sims)
         .and('contain', status);
     }
+
+    verifySimValidationMessage(expectedText) {
+      cy.contains('div', new RegExp(expectedText, 'i'), { timeout: 8000 })
+        .should('be.visible')
+        .then(() => {
+          cy.log(`✅ Validation message displayed: "${expectedText}"`);
+        });
   }
   
+}
   export default new OrderSimsPage();
   
