@@ -13,9 +13,9 @@ permissions:
 
 jobs:
 
-  # -----------------------------
+  # -------------------------------------------------
   # 1. Static Code Analysis (CodeQL)
-  # -----------------------------
+  # -------------------------------------------------
   static-analysis:
     name: Static Code Analysis
     runs-on: ubuntu-latest
@@ -36,13 +36,18 @@ jobs:
         uses: github/codeql-action/analyze@v3
 
 
-  # -----------------------------
+  # -------------------------------------------------
   # 2. Run Cypress Tests
-  # -----------------------------
+  # -------------------------------------------------
   cypress-tests:
     name: Run Cypress Tests
     runs-on: ubuntu-latest
     needs: static-analysis
+
+    env:
+      CYPRESS_VERSION: 13.17.0
+      NODE_TLS_REJECT_UNAUTHORIZED: "0"
+      CYPRESS_VERIFY_TIMEOUT: 120000
 
     steps:
       - name: Checkout repository
@@ -51,26 +56,18 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v3
         with:
-          node-version: "22" # ✅ Fixes EBADENGINE warnings
+          node-version: "22"
 
-      - name: Clean npm and Cypress cache
-        run: |
-          npm cache clean --force
-          npx cypress cache clear
+      - name: Clean npm cache
+        run: npm cache clean --force || true
 
-      - name: Install dependencies
-        env:
-          CYPRESS_VERIFY_TIMEOUT: 120000
-          NODE_TLS_REJECT_UNAUTHORIZED: "0"
+      - name: Install dependencies (includes Cypress)
         run: npm ci
 
-      - name: Verify & Install Cypress (with retry)
-        env:
-          CYPRESS_VERIFY_TIMEOUT: 120000
-          NODE_TLS_REJECT_UNAUTHORIZED: "0"
+      - name: Verify & Install Cypress binary (with retry)
         run: |
           for i in 1 2 3; do
-            npx cypress install && break || sleep 10
+            npx cypress install --version $CYPRESS_VERSION && break || sleep 10
           done
 
       - name: Run Cypress tests
@@ -79,29 +76,29 @@ jobs:
             --reporter mochawesome \
             --reporter-options reportDir=cypress/reports,overwrite=false,html=false,json=true || true
 
-      - name: Merge & Generate Mochawesome HTML report (if JSONs exist)
+      - name: Merge & Generate Mochawesome HTML report
         run: |
           echo "Checking for mochawesome JSON reports..."
           if ls cypress/reports/*.json 1> /dev/null 2>&1; then
             echo "Merging mochawesome JSON files..."
             npx mochawesome-merge "cypress/reports/*.json" > cypress/reports/output.json || true
-
             if [ -f cypress/reports/output.json ]; then
               echo "Generating HTML report..."
               npx mochawesome-report-generator cypress/reports/output.json -f index -o cypress/reports || true
             else
-              echo "❌ output.json not found after merge; skipping HTML generation."
+              echo "⚠️ output.json not found after merge; skipping HTML generation."
             fi
           else
-            echo "⚠️ No mochawesome JSON files found. Skipping report generation."
+            echo "⚠️ No mochawesome JSON files found. Skipping merge and report generation."
           fi
 
       - name: Verify artifact contents
         run: |
           echo "Listing contents of cypress/reports:"
           ls -la cypress/reports || true
-          echo "Listing screenshots and videos (if any):"
+          echo "Screenshots:"
           ls -la cypress/reports/screenshots || true
+          echo "Videos:"
           ls -la cypress/reports/videos || true
 
       - name: Upload Cypress Test Reports (artifact)
@@ -114,9 +111,9 @@ jobs:
             cypress/reports/videos/
 
 
-  # -----------------------------
+  # -------------------------------------------------
   # 3. Upload Reports to AWS S3
-  # -----------------------------
+  # -------------------------------------------------
   upload-to-s3:
     name: Upload Test Reports to S3
     runs-on: ubuntu-latest
@@ -142,31 +139,31 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ap-south-2
 
-      - name: Upload reports to S3 (recursive)
+      - name: Upload reports to S3
         run: |
           if [ -d "cypress/reports" ]; then
             echo "Uploading reports..."
             aws s3 cp cypress/reports s3://abhinandan-cypress-results/reports/ --recursive || true
           else
-            echo "⚠️ No reports folder found."
+            echo "⚠️ reports folder not found"
           fi
 
           if [ -f "cypress/reports/index.html" ]; then
-            echo "Uploading index.html with content-type text/html..."
+            echo "Uploading index.html with correct content-type..."
             aws s3 cp cypress/reports/index.html s3://abhinandan-cypress-results/reports/index.html --content-type text/html || true
           fi
 
 
-  # -----------------------------
+  # -------------------------------------------------
   # 4. Trigger AWS CodeBuild
-  # -----------------------------
+  # -------------------------------------------------
   trigger-codebuild:
     name: Trigger CodeBuild Project
     runs-on: ubuntu-latest
     needs: upload-to-s3
 
     steps:
-      - name: Configure AWS Credentials (for CodeBuild)
+      - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v2
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
@@ -177,9 +174,9 @@ jobs:
         run: aws codebuild start-build --project-name abhinandan-cypress-build
 
 
-  # -----------------------------
+  # -------------------------------------------------
   # 5. Notify via AWS SNS
-  # -----------------------------
+  # -------------------------------------------------
   sns-notification:
     name: Send SNS Notification
     runs-on: ubuntu-latest
@@ -209,7 +206,7 @@ jobs:
           echo "Searching for index.html in S3..."
           exists=$(aws s3api head-object --bucket abhinandan-cypress-results --key "$key" 2>&1 || true)
           if echo "$exists" | grep -q 'Not Found'; then
-            echo "Index.html not found; searching for any .html file..."
+            echo "index.html not found; searching for any .html file..."
             latest_html=$(aws s3api list-objects-v2 \
               --bucket abhinandan-cypress-results \
               --prefix reports/ \
@@ -234,7 +231,7 @@ jobs:
             "Start Time: $START_TIME" \
             "End Time: $END_TIME" \
             "Cypress HTML Report: $REPORT_URL" \
-            "Reports have been uploaded to S3 and CodeBuild triggered successfully." > message.txt
+            "Reports uploaded to S3 and CodeBuild triggered successfully." > message.txt
 
           aws sns publish \
             --topic-arn arn:aws:sns:ap-south-2:136905788804:abhinandan-cypress-sns \
