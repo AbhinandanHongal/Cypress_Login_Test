@@ -51,40 +51,56 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v3
         with:
-          node-version: "18"
+          node-version: "22" # ✅ Fixes EBADENGINE warnings
+
+      - name: Clean npm and Cypress cache
+        run: |
+          npm cache clean --force
+          npx cypress cache clear
 
       - name: Install dependencies
+        env:
+          CYPRESS_VERIFY_TIMEOUT: 120000
+          NODE_TLS_REJECT_UNAUTHORIZED: "0"
         run: npm ci
+
+      - name: Verify & Install Cypress (with retry)
+        env:
+          CYPRESS_VERIFY_TIMEOUT: 120000
+          NODE_TLS_REJECT_UNAUTHORIZED: "0"
+        run: |
+          for i in 1 2 3; do
+            npx cypress install && break || sleep 10
+          done
 
       - name: Run Cypress tests
         run: |
-          # run cypress and continue even if tests fail so we can still gather reports
-          npx cypress run --reporter mochawesome --reporter-options reportDir=cypress/reports,overwrite=false,html=false,json=true || true
+          npx cypress run \
+            --reporter mochawesome \
+            --reporter-options reportDir=cypress/reports,overwrite=false,html=false,json=true || true
 
       - name: Merge & Generate Mochawesome HTML report (if JSONs exist)
         run: |
           echo "Checking for mochawesome JSON reports..."
           if ls cypress/reports/*.json 1> /dev/null 2>&1; then
             echo "Merging mochawesome JSON files..."
-            # merge -> output.json (using mochawesome-merge)
             npx mochawesome-merge "cypress/reports/*.json" > cypress/reports/output.json || true
 
-            # generate HTML from merged JSON
             if [ -f cypress/reports/output.json ]; then
-              echo "Generating HTML report from output.json..."
+              echo "Generating HTML report..."
               npx mochawesome-report-generator cypress/reports/output.json -f index -o cypress/reports || true
             else
-              echo " output.json not found after merge; skipping HTML generation."
+              echo "❌ output.json not found after merge; skipping HTML generation."
             fi
           else
-            echo " No mochawesome JSON files found. Skipping merge and report generation."
+            echo "⚠️ No mochawesome JSON files found. Skipping report generation."
           fi
 
       - name: Verify artifact contents
         run: |
-          echo "Listing contents of cypress/reports (top-level):"
+          echo "Listing contents of cypress/reports:"
           ls -la cypress/reports || true
-          echo "Listing screenshots and videos:"
+          echo "Listing screenshots and videos (if any):"
           ls -la cypress/reports/screenshots || true
           ls -la cypress/reports/videos || true
 
@@ -114,9 +130,9 @@ jobs:
 
       - name: Verify artifact after download
         run: |
-          echo "Listing workspace"
+          echo "Listing workspace:"
           ls -la || true
-          echo "Listing cypress/reports"
+          echo "Listing cypress/reports:"
           ls -la cypress/reports || true
 
       - name: Configure AWS Credentials
@@ -128,28 +144,16 @@ jobs:
 
       - name: Upload reports to S3 (recursive)
         run: |
-          echo "Uploading cypress/reports -> s3://abhinandan-cypress-results/reports/"
           if [ -d "cypress/reports" ]; then
+            echo "Uploading reports..."
             aws s3 cp cypress/reports s3://abhinandan-cypress-results/reports/ --recursive || true
           else
-            echo "reports folder not found"
+            echo "⚠️ No reports folder found."
           fi
 
-          echo "Uploading screenshots and videos (if present)"
-          if [ -d "cypress/reports/screenshots" ]; then
-            aws s3 cp cypress/reports/screenshots s3://abhinandan-cypress-results/screenshots/ --recursive || true
-          fi
-
-          if [ -d "cypress/reports/videos" ]; then
-            aws s3 cp cypress/reports/videos s3://abhinandan-cypress-results/videos/ --recursive || true
-          fi
-
-          # Ensure index.html is uploaded with correct Content-Type so browsers render it
           if [ -f "cypress/reports/index.html" ]; then
-            echo "Uploading index.html with content-type text/html"
+            echo "Uploading index.html with content-type text/html..."
             aws s3 cp cypress/reports/index.html s3://abhinandan-cypress-results/reports/index.html --content-type text/html || true
-          else
-            echo "No index.html found locally to upload (HTML generation may have failed)."
           fi
 
 
@@ -170,8 +174,7 @@ jobs:
           aws-region: us-east-1
 
       - name: Trigger CodeBuild
-        run: |
-          aws codebuild start-build --project-name abhinandan-cypress-build
+        run: aws codebuild start-build --project-name abhinandan-cypress-build
 
 
   # -----------------------------
@@ -193,66 +196,46 @@ jobs:
       - name: Capture Run Start and End Time
         id: capture_time
         run: |
-          # Capture times (use commit time if available; fallback to now)
-          if [ -n "${{ github.event.head_commit.timestamp }}" ]; then
-            START_TIME=$(date -u -d "${{ github.event.head_commit.timestamp }}" '+%Y-%m-%d %H:%M:%S UTC')
-            echo "START_TIME=$START_TIME" >> $GITHUB_ENV
-          else
-            START_TIME=$(date -u '+%Y-%m-%d %H:%M:%S UTC')
-            echo "START_TIME=$START_TIME" >> $GITHUB_ENV
-          fi
-
+          START_TIME=$(date -u '+%Y-%m-%d %H:%M:%S UTC')
           END_TIME=$(date -u '+%Y-%m-%d %H:%M:%S UTC')
+          echo "START_TIME=$START_TIME" >> $GITHUB_ENV
           echo "END_TIME=$END_TIME" >> $GITHUB_ENV
-
-          # Duration in seconds (best-effort)
-          start_epoch=$(date -u -d "${{ github.event.head_commit.timestamp }}" +%s 2>/dev/null || echo $(date -u +%s))
-          end_epoch=$(date -u +%s)
-          duration=$((end_epoch - start_epoch))
-          echo "DURATION=${duration}s" >> $GITHUB_ENV
 
       - name: Find Cypress HTML report in S3 and generate pre-signed URL
         id: find_latest
+        continue-on-error: true
         run: |
-          echo "Searching for reports/index.html in S3 bucket..."
-          # Prefer index.html at reports/index.html path
           key="reports/index.html"
+          echo "Searching for index.html in S3..."
           exists=$(aws s3api head-object --bucket abhinandan-cypress-results --key "$key" 2>&1 || true)
-
           if echo "$exists" | grep -q 'Not Found'; then
-            echo "Index HTML not found at $key; searching for any .html under reports/ ..."
+            echo "Index.html not found; searching for any .html file..."
             latest_html=$(aws s3api list-objects-v2 \
               --bucket abhinandan-cypress-results \
               --prefix reports/ \
               --query "Contents[?ends_with(Key, '.html')]|[0].Key" \
               --output text)
             if [ -z "$latest_html" ] || [ "$latest_html" = "None" ]; then
-              echo "No HTML report found in S3."
+              echo "No HTML report found. Skipping SNS notification."
               exit 0
             fi
             key="$latest_html"
-          else
-            echo "Found index.html at $key"
           fi
-
-          echo "Using S3 object key: $key"
           url=$(aws s3 presign s3://abhinandan-cypress-results/$key --expires-in 604800)
           echo "REPORT_URL=$url" >> $GITHUB_ENV
           echo "REPORT_KEY=$key" >> $GITHUB_ENV
-          echo "Found and presigned: $url"
+          echo "✅ Presigned URL: $url"
 
       - name: Send SNS notification
+        if: env.REPORT_URL != ''
         run: |
-          # Build the message body (multiline). Use printf to preserve newlines.
           printf "%s\n\n%s\n%s\n\n%s\n%s\n\n%s\n" \
-            " Cypress CI/CD Pipeline Completed Successfully!" \
-            " Start Time: $START_TIME" \
-            " End Time: $END_TIME" \
-            " Total Duration: $DURATION" \
-            " Cypress HTML Report: $REPORT_URL" \
-            "Reports have been uploaded to S3 and CodeBuild was triggered successfully." > message.txt
+            "✅ Cypress CI/CD Pipeline Completed Successfully!" \
+            "Start Time: $START_TIME" \
+            "End Time: $END_TIME" \
+            "Cypress HTML Report: $REPORT_URL" \
+            "Reports have been uploaded to S3 and CodeBuild triggered successfully." > message.txt
 
           aws sns publish \
             --topic-arn arn:aws:sns:ap-south-2:136905788804:abhinandan-cypress-sns \
             --message file://message.txt
-
