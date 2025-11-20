@@ -1,0 +1,152 @@
+class OrderHistoryPage {
+    elements = {
+      // Header bar items
+      headerOrderHistory: () => cy.contains('Order History', { matchCase: false }),
+      headerOrderSims: () => cy.contains('Order Sims', { matchCase: false }),
+      headerSignOut: () => cy.contains('Sign out', { matchCase: false }),
+  
+      // Page and content elements
+      pageTitle: () => cy.contains('Order History', { matchCase: false }),
+      searchInput: () => cy.get('input[placeholder="Search"]'),
+  
+      // Table elements
+      table: () => cy.get('table', { timeout: 15000 }),
+      tableHeaders: () => cy.get('table thead th', { timeout: 15000 }),
+      tableRows: () => cy.get('table tbody tr', { timeout: 15000 }),
+      firstRow: () => cy.get('table tbody tr').first(),
+      orderIdLinks: () => cy.get('table tbody tr td:first-child a'),
+  
+      // Empty-state message (if no rows)
+      noDataMessage: () =>
+        cy.contains(/no data|no orders|empty|nothing found/i, { timeout: 6000 }),
+    };
+  
+    /**
+     * Navigates to Order History page via header link
+     */
+    navigate() {
+      cy.log('🧭 Navigating to Order History page...');
+      this.elements.headerOrderHistory().should('be.visible').click({ force: true });
+      cy.url({ timeout: 15000 }).should('include', '/order-history');
+      this.elements.pageTitle().should('be.visible');
+      cy.log('✅ Navigated to Order History page successfully');
+    }
+  
+    /**
+     * Verifies that the expected table headers are displayed
+     */
+    verifyTableHeaders() {
+      const expectedHeaders = ['ID', 'Date', 'Store Name', 'Quantity', 'Status'];
+  
+      cy.log('📋 Verifying table headers...');
+      this.elements.tableHeaders().should('have.length', expectedHeaders.length);
+  
+      expectedHeaders.forEach((header) => {
+        cy.contains('th', new RegExp(`^${header}$`, 'i')).should('exist');
+      });
+  
+      cy.log('✅ Verified table headers are correctly displayed');
+    }
+  
+    /**
+     * Verifies whether order history table has data or not
+     */
+    verifyOrderPresence() {
+      cy.log('🔎 Checking for table or empty state...');
+  
+      // Ensure the table exists before proceeding
+      this.elements.table().should('exist').and('be.visible');
+  
+      cy.get('body').then(($body) => {
+        const hasRows = $body.find('table tbody tr').length > 0;
+  
+        if (!hasRows) {
+          cy.log('⚠️ No orders found for this user.');
+          this.elements.noDataMessage().should('exist');
+          return;
+        }
+  
+        cy.log('✅ Orders found in the Order History table');
+        this.verifyTableHeaders();
+  
+        this.elements.firstRow().within(() => {
+          cy.get('td')
+            .eq(0)
+            .should('be.visible')
+            .invoke('text')
+            .should('match', /\d+/); // ID must contain digits
+  
+          cy.get('td')
+            .eq(1)
+            .should('be.visible')
+            .invoke('text')
+            .should('match', /\d{2}\/\d{2}\/\d{4}/); // DD/MM/YYYY format
+  
+          cy.get('td').eq(2).should('be.visible').and('not.be.empty'); // Store Name
+  
+          cy.get('td')
+            .eq(3)
+            .should('be.visible')
+            .invoke('text')
+            .should('match', /\d+/); // Quantity numeric
+  
+          cy.get('td').eq(4).should('be.visible').and('not.be.empty'); // Status
+        });
+      });
+    }
+  
+    /**
+     * Searches for given text (ID / Store / Address / Date)
+     */
+    searchAndVerify(value) {
+      cy.log(`🔍 Searching for value: ${value}`);
+  
+      this.elements.searchInput().should('be.visible').clear().type(`${value}{enter}`);
+      cy.wait(1500);
+  
+      this.elements.tableRows().then(($rows) => {
+        if ($rows.length === 0) {
+          cy.log(`⚠️ No results found for search: "${value}"`);
+        } else {
+          cy.log(`✅ Found ${$rows.length} results for search: "${value}"`);
+          this.elements.tableRows().each(($row) => {
+            cy.wrap($row).should('contain.text', value);
+          });
+        }
+      });
+    }
+  
+    /**
+     * Verifies order data for a specific known order
+     */
+    verifySpecificOrder(id, storeName, quantity, status) {
+      cy.log(`🧾 Verifying specific order ID: ${id}`);
+  
+      this.elements.tableRows()
+        .filter(`:contains(${id})`)
+        .should('contain.text', storeName)
+        .and('contain.text', quantity)
+        .and('contain.text', status);
+  
+      cy.log(`✅ Verified order ${id} for ${storeName} (${quantity}, ${status})`);
+    }
+  
+    /**
+     * Clicks the first order ID and verifies popup/modal visibility
+     */
+    openOrderDetailsPopup() {
+      cy.log('🔍 Opening Order Details popup...');
+      this.elements.orderIdLinks().first().should('be.visible').click({ force: true });
+  
+      cy.get('.modal-dialog, .order-details-modal', { timeout: 10000 })
+        .should('be.visible')
+        .within(() => {
+          cy.contains(/Order Details|ID|Store|Quantity|Status/i).should('exist');
+        });
+  
+      cy.log('✅ Order Details popup displayed successfully');
+    }
+  }
+  
+  export default new OrderHistoryPage();
+  

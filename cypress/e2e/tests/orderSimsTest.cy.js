@@ -85,8 +85,8 @@ describe('Order Sims Module - Functional Test Suite', () => {
   // ----------------------------------------------------------------
   it('RSO_FT_19 – Validation for invalid and blank values in Number of SIMs field', () => {
     const invalidValues = [
-      { input: '', expected: 'is required' }, // use '' instead of null/space
-      { input: ' ', expected: 'is required' },
+      { input: '', expected: 'Number of sims is required' }, // use '' instead of null/space
+      { input: ' ', expected: 'must be a number' },
       { input: '@@@', expected: 'must be a number' },
       { input: 'abc', expected: 'must be a number' },
       { input: '50xyz', expected: 'must be a number' }

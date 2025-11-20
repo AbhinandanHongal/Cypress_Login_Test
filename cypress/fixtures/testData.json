@@ -10,6 +10,14 @@
     "message": "Please deliver ASAP",
     "status": "Pending"
   },
+  "orderHistory": {
+    "validOrder": {
+      "id": "120881",
+      "storeName": "Store 1",
+      "address": "Dublin City Center",
+      "date": "19/11/2025"
+    }
+  },
   "invalidUser": {
     "email": "wrong_user@thbs.com",
     "password": "wrongpass"
