@@ -10,7 +10,7 @@ module.exports = defineConfig({
   },
 
   e2e: {
-    baseUrl: "https://retail-staging.48.ie",  // update as needed
+    baseUrl: "https://retail-staging.48.ie/login",  // update as needed
     specPattern: "cypress/e2e/tests/**/*.cy.js",
 
     video: true,
