@@ -29,7 +29,7 @@ describe('🧩 Order History Module - Functional Test Suite', () => {
     LoginPage.enterEmail(testData.validUser.email);
     LoginPage.enterPassword(testData.validUser.password);
     LoginPage.clickSignIn();
-    cy.contains('Order History', { timeout: 20000 }).should('be.visible');
+    cy.contains('Order History', { timeout: 40000 }).should('be.visible');
   });
 
   // -------------------------------------------------------

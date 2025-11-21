@@ -12,18 +12,28 @@ if (typeof merge !== "function") {
 }
 
 const reportsDir = path.join(__dirname, "cypress", "reports");
-let pattern = path.join(reportsDir, "mochawesome*.json").replace(/\\/g, "/");
+let pattern = path.join(reportsDir, "*.json").replace(/\\/g, "/");
 
 console.log("📂 Reports directory:", reportsDir);
 console.log("📘 Using file pattern:", pattern);
 
 (async () => {
   try {
-    console.log("🔄 Merging JSON reports...");
+    // Filter out empty or invalid JSON files before merging
+    const files = fs
+      .readdirSync(reportsDir)
+      .filter(
+        (f) => f.endsWith(".json") && fs.statSync(path.join(reportsDir, f)).size > 10
+      )
+      .map((f) => path.join(reportsDir, f));
 
-    const result = await merge({
-      files: [pattern],   // ✔ MUST be inside "files" array
-    });
+    if (files.length === 0) {
+      console.warn("⚠️ No valid mochawesome JSON files found to merge. Skipping merge step.");
+      process.exit(0);
+    }
+
+    console.log(`🔄 Merging ${files.length} valid mochawesome JSON files...`);
+    const result = await merge({ files });
 
     const outputFile = path.join(reportsDir, "output.json");
     fs.writeFileSync(outputFile, JSON.stringify(result, null, 2));
@@ -31,5 +41,6 @@ console.log("📘 Using file pattern:", pattern);
     console.log("✅ Merged report saved at:", outputFile);
   } catch (err) {
     console.error("❌ Merge failed:", err);
+    process.exit(1);
   }
 })();

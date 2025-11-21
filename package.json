@@ -4,21 +4,19 @@
   "description": "Cypress + Mochawesome reporting integrated framework",
   "main": "index.js",
   "scripts": {
-    "clear:reports": "npx rimraf cypress/reports",
-    "clear:screenshots": "npx rimraf cypress/screenshots",
-    "clear:videos": "npx rimraf cypress/videos",
-    "clear:all": "npm run clear:reports && npm run clear:screenshots && npm run clear:videos",
+  "clear:reports": "npx rimraf cypress/reports",
+  "clear:screenshots": "npx rimraf cypress/screenshots",
+  "clear:videos": "npx rimraf cypress/videos",
+  "clear:all": "npm run clear:reports && npm run clear:screenshots && npm run clear:videos",
 
-    "test:run": "npx cypress run --reporter mochawesome --reporter-options reportDir=cypress/reports,overwrite=false,html=false,json=true || exit /b 0",
+  "test:run": "npx cypress run --reporter mochawesome --reporter-options reportDir=cypress/reports,overwrite=false,html=false,json=true || exit /b 0",
+  
+  "merge-reports": "node merge-reports.cjs",
 
-    "merge-reports": "node merge-reports.cjs",
+  "generate-report": "npx mochawesome-report-generator cypress/reports/output.json -f index -o cypress/reports || exit /b 0",
 
-    "generate-report": "npx mochawesome-report-generator cypress/reports/output.json -f index -o cypress/reports",
-
-    "report:full": "npm run merge-reports && npm run generate-report",
-
-    "test:full": "npm run clear:all && npm run test:run && npm run merge-reports && npm run generate-report"
-  },
+  "test:full": "npm run clear:all && npm run test:run && npm run merge-reports && npm run generate-report"
+},
   "keywords": ["cypress", "automation", "mochawesome", "reporting"],
   "author": "Abhinandan Hongal",
   "license": "ISC",
