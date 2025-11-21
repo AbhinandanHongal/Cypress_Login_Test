@@ -18,7 +18,7 @@ class OrderSimsPage {
 
   // Visit Order Sims page directly
   visit() {
-    cy.visit('/order-sims');
+    cy.visit('https://retail-staging.48.ie/order-sims');
   }
 
   // Select retail store name from dropdown
