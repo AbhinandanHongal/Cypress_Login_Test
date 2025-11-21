@@ -10,8 +10,6 @@ module.exports = defineConfig({
   },
 
   e2e: {
-    // ✅ Base URL (root only — Cypress will append /login as needed)
-    baseUrl: "https://retail-staging.48.ie",
 
     // ✅ Test pattern
     specPattern: "cypress/e2e/tests/**/*.cy.js",
