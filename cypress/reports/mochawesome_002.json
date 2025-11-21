@@ -1,0 +1,205 @@
+{
+  "stats": {
+    "suites": 1,
+    "tests": 6,
+    "passes": 5,
+    "pending": 0,
+    "failures": 1,
+    "start": "2025-11-21T08:59:05.546Z",
+    "end": "2025-11-21T09:00:05.210Z",
+    "duration": 59664,
+    "testsRegistered": 6,
+    "passPercent": 83.33333333333334,
+    "pendingPercent": 0,
+    "other": 0,
+    "hasOther": false,
+    "skipped": 0,
+    "hasSkipped": false
+  },
+  "results": [
+    {
+      "uuid": "276ca143-368e-4a1d-a2f9-7b2cdcc1dfe8",
+      "title": "",
+      "fullFile": "cypress\\e2e\\tests\\orderSimsTest.cy.js",
+      "file": "cypress\\e2e\\tests\\orderSimsTest.cy.js",
+      "beforeHooks": [],
+      "afterHooks": [],
+      "tests": [],
+      "suites": [
+        {
+          "uuid": "180fe938-27b9-4d99-be3e-dd4126bb4151",
+          "title": "Order Sims Module - Functional Test Suite",
+          "fullFile": "",
+          "file": "",
+          "beforeHooks": [],
+          "afterHooks": [],
+          "tests": [
+            {
+              "title": "RSO_FT_14 – Verify navigation to Order Sims page after sign in",
+              "fullTitle": "Order Sims Module - Functional Test Suite RSO_FT_14 – Verify navigation to Order Sims page after sign in",
+              "timedOut": null,
+              "duration": 4250,
+              "state": "passed",
+              "speed": "fast",
+              "pass": true,
+              "fail": false,
+              "pending": false,
+              "context": null,
+              "code": "cy.log('🧭 Navigating to Order Sims page...');\n_orderSimsPage.default.visit();\ncy.url().should('include', '/order-sims');\ncy.contains('Order SIMs').should('be.visible');\ncy.log('✅ User successfully navigated to Order Sims page after login');",
+              "err": {},
+              "uuid": "b22f0908-a1c5-458e-80e0-fce3ec46371f",
+              "parentUUID": "180fe938-27b9-4d99-be3e-dd4126bb4151",
+              "isHook": false,
+              "skipped": false
+            },
+            {
+              "title": "RSO_FT_15 – Verify placing a valid bulk SIM order (<999)",
+              "fullTitle": "Order Sims Module - Functional Test Suite RSO_FT_15 – Verify placing a valid bulk SIM order (<999)",
+              "timedOut": null,
+              "duration": 8310,
+              "state": "passed",
+              "speed": "medium",
+              "pass": true,
+              "fail": false,
+              "pending": false,
+              "context": null,
+              "code": "_orderSimsPage.default.visit();\n_orderSimsPage.default.enterRetailStoreName(testData.orderSims.storeName);\n_orderSimsPage.default.enterDeliveryAddress(testData.orderSims.deliveryAddress);\n_orderSimsPage.default.enterNumberOfSims(testData.orderSims.sims); // e.g. 100\n_orderSimsPage.default.enterMessage(testData.orderSims.message);\n_orderSimsPage.default.clickOrderSims();\n_orderSimsPage.default.verifyOrderPopupAndClose();\ncy.get('#orderModal', {\n  timeout: 10000\n}).should('not.exist');\ncy.log('✅ Bulk SIM order placed successfully');",
+              "err": {},
+              "uuid": "86939d29-b66e-4284-a6de-3d914d477f15",
+              "parentUUID": "180fe938-27b9-4d99-be3e-dd4126bb4151",
+              "isHook": false,
+              "skipped": false
+            },
+            {
+              "title": "RSO_FT_16 – Verify placing bulk SIM order of 999",
+              "fullTitle": "Order Sims Module - Functional Test Suite RSO_FT_16 – Verify placing bulk SIM order of 999",
+              "timedOut": null,
+              "duration": 10352,
+              "state": "passed",
+              "speed": "slow",
+              "pass": true,
+              "fail": false,
+              "pending": false,
+              "context": null,
+              "code": "_orderSimsPage.default.visit();\n_orderSimsPage.default.enterRetailStoreName(testData.orderSims.storeName);\n_orderSimsPage.default.enterDeliveryAddress(testData.orderSims.deliveryAddress);\n_orderSimsPage.default.enterNumberOfSims(500);\n_orderSimsPage.default.enterMessage('Placing max allowed 500 SIMs');\n_orderSimsPage.default.clickOrderSims();\n_orderSimsPage.default.verifyOrderPopupAndClose();\ncy.get('#orderModal', {\n  timeout: 10000\n}).should('not.exist');\ncy.log('✅ Order for 999 SIMs placed successfully');",
+              "err": {},
+              "uuid": "b008c95a-bc4b-488d-afb9-ab18e8a9d7c5",
+              "parentUUID": "180fe938-27b9-4d99-be3e-dd4126bb4151",
+              "isHook": false,
+              "skipped": false
+            },
+            {
+              "title": "RSO_FT_17 – Verify error message for SIM order >999",
+              "fullTitle": "Order Sims Module - Functional Test Suite RSO_FT_17 – Verify error message for SIM order >999",
+              "timedOut": null,
+              "duration": 5486,
+              "state": "passed",
+              "speed": "medium",
+              "pass": true,
+              "fail": false,
+              "pending": false,
+              "context": null,
+              "code": "_orderSimsPage.default.visit();\n_orderSimsPage.default.enterRetailStoreName(testData.orderSims.storeName);\n_orderSimsPage.default.enterDeliveryAddress(testData.orderSims.deliveryAddress);\n_orderSimsPage.default.enterNumberOfSims(1000); // trigger max-limit validation\n_orderSimsPage.default.elements.numberOfSimsInput().blur(); // ✅ FIXED\n_orderSimsPage.default.verifySimValidationMessage('must be at most 999');",
+              "err": {},
+              "uuid": "e7d074cc-29a7-4a1d-913a-e758b2c383fd",
+              "parentUUID": "180fe938-27b9-4d99-be3e-dd4126bb4151",
+              "isHook": false,
+              "skipped": false
+            },
+            {
+              "title": "RSO_FT_19 – Validation for invalid and blank values in Number of SIMs field",
+              "fullTitle": "Order Sims Module - Functional Test Suite RSO_FT_19 – Validation for invalid and blank values in Number of SIMs field",
+              "timedOut": null,
+              "duration": 20514,
+              "state": "passed",
+              "speed": "slow",
+              "pass": true,
+              "fail": false,
+              "pending": false,
+              "context": null,
+              "code": "const invalidValues = [{\n  input: '',\n  expected: 'Number of sims is required'\n},\n// use '' instead of null/space\n{\n  input: ' ',\n  expected: 'must be a number'\n}, {\n  input: '@@@',\n  expected: 'must be a number'\n}, {\n  input: 'abc',\n  expected: 'must be a number'\n}, {\n  input: '50xyz',\n  expected: 'must be a number'\n}];\ninvalidValues.forEach(({\n  input,\n  expected\n}) => {\n  _orderSimsPage.default.visit();\n  cy.log(`🧪 Testing invalid SIM count: \"${input}\" expecting: \"${expected}\"`);\n  _orderSimsPage.default.enterRetailStoreName(testData.orderSims.storeName);\n  _orderSimsPage.default.enterDeliveryAddress(testData.orderSims.deliveryAddress);\n  // Clear field before typing\n  _orderSimsPage.default.elements.numberOfSimsInput().clear();\n  if (input) {\n    _orderSimsPage.default.enterNumberOfSims(input);\n  }\n  // Explicitly trigger blur event\n  _orderSimsPage.default.elements.numberOfSimsInput().blur();\n  // Optionally, click somewhere else to confirm Angular validation renders\n  _orderSimsPage.default.elements.messageInput().click({\n    force: true\n  });\n  // Now verify the validation message\n  _orderSimsPage.default.verifySimValidationMessage(expected);\n});",
+              "err": {},
+              "uuid": "b94dc35e-22ba-42b9-bd1e-beae22dafdf9",
+              "parentUUID": "180fe938-27b9-4d99-be3e-dd4126bb4151",
+              "isHook": false,
+              "skipped": false
+            },
+            {
+              "title": "RSO_FT_18 – Verify placed order appears in Order History (from latest valid order)",
+              "fullTitle": "Order Sims Module - Functional Test Suite RSO_FT_18 – Verify placed order appears in Order History (from latest valid order)",
+              "timedOut": null,
+              "duration": 10270,
+              "state": "failed",
+              "speed": null,
+              "pass": false,
+              "fail": true,
+              "pending": false,
+              "context": null,
+              "code": "_orderSimsPage.default.goToOrderHistory();\ncy.url().should('include', '/order-history');\n_orderSimsPage.default.verifyOrderInHistory(testData.orderSims.storeName, testData.orderSims.sims, testData.orderSims.status);\ncy.log('✅ Verified latest order present in Order History');",
+              "err": {
+                "message": "AssertionError: Timed out retrying after 10000ms: Expected to find element: `a[routerlink=\"/order-history\"], a[href=\"/order-history\"]`, but never found it.",
+                "estack": "AssertionError: Timed out retrying after 10000ms: Expected to find element: `a[routerlink=\"/order-history\"], a[href=\"/order-history\"]`, but never found it.\n    at OrderSimsPage.goToOrderHistory (webpack://cypress_mocha_framework/./cypress/e2e/pages/orderSimsPage.js:130:7)\n    at Context.eval (webpack://cypress_mocha_framework/./cypress/e2e/tests/orderSimsTest.cy.js:122:18)",
+                "diff": null
+              },
+              "uuid": "98501a1c-6687-4782-86be-a8b24d5dabbc",
+              "parentUUID": "180fe938-27b9-4d99-be3e-dd4126bb4151",
+              "isHook": false,
+              "skipped": false
+            }
+          ],
+          "suites": [],
+          "passes": [
+            "b22f0908-a1c5-458e-80e0-fce3ec46371f",
+            "86939d29-b66e-4284-a6de-3d914d477f15",
+            "b008c95a-bc4b-488d-afb9-ab18e8a9d7c5",
+            "e7d074cc-29a7-4a1d-913a-e758b2c383fd",
+            "b94dc35e-22ba-42b9-bd1e-beae22dafdf9"
+          ],
+          "failures": [
+            "98501a1c-6687-4782-86be-a8b24d5dabbc"
+          ],
+          "pending": [],
+          "skipped": [],
+          "duration": 59182,
+          "root": false,
+          "rootEmpty": false,
+          "_timeout": 2000
+        }
+      ],
+      "passes": [],
+      "failures": [],
+      "pending": [],
+      "skipped": [],
+      "duration": 0,
+      "root": true,
+      "rootEmpty": true,
+      "_timeout": 2000
+    }
+  ],
+  "meta": {
+    "mocha": {
+      "version": "7.0.1"
+    },
+    "mochawesome": {
+      "options": {
+        "quiet": false,
+        "reportFilename": "mochawesome",
+        "saveHtml": false,
+        "saveJson": true,
+        "consoleReporter": "spec",
+        "useInlineDiffs": false,
+        "code": true
+      },
+      "version": "7.1.4"
+    },
+    "marge": {
+      "options": {
+        "reportDir": "cypress/reports",
+        "overwrite": false,
+        "html": false,
+        "json": true
+      },
+      "version": "6.3.2"
+    }
+  }
+}

@@ -5,24 +5,37 @@ module.exports = defineConfig({
   reporterOptions: {
     reportDir: "cypress/reports",
     overwrite: false,
-    html: false,    // HTML generated separately using marge
-    json: true      // JSON output required for merging
+    html: false, // HTML generated separately using marge
+    json: true,  // JSON output required for merging
   },
 
   e2e: {
-    baseUrl: "https://retail-staging.48.ie/login",  // update as needed
+    // ✅ Base URL (root only — Cypress will append /login as needed)
+    baseUrl: "https://retail-staging.48.ie",
+
+    // ✅ Test pattern
     specPattern: "cypress/e2e/tests/**/*.cy.js",
 
+    // ✅ Artifacts
     video: true,
     screenshotOnRunFailure: true,
-
     videosFolder: "cypress/reports/videos",
     screenshotsFolder: "cypress/reports/screenshots",
 
+    // ✅ Stability improvements
+    defaultCommandTimeout: 15000,
+    pageLoadTimeout: 60000,
+    requestTimeout: 15000,
+    responseTimeout: 15000,
+    chromeWebSecurity: false,
+
+    // ✅ Skip “verify server running” check
+    verifyTimeout: 0,
+
+    // ✅ Node event setup (kept simple)
     setupNodeEvents(on, config) {
-      // 🔥 DO NOT add cypress-mochawesome-reporter here
-      // It is not needed unless you want auto-merge (which you don't)
+      // No additional plugin setup needed
       return config;
-    }
-  }
+    },
+  },
 });
