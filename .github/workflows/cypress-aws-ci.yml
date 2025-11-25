@@ -36,8 +36,8 @@ jobs:
         uses: github/codeql-action/analyze@v3
 
 
-  # -------------------------------------------------
-  # 2. Run Cypress Tests
+   # -------------------------------------------------
+  # 2. Run Cypress Tests (FIXED)
   # -------------------------------------------------
   cypress-tests:
     name: Run Cypress Tests
@@ -46,68 +46,69 @@ jobs:
 
     env:
       NODE_TLS_REJECT_UNAUTHORIZED: "0"
-      CYPRESS_VERIFY_TIMEOUT: 120000
-      CYPRESS_VERSION: 13.15.0
-      CYPRESS_INSTALL_BINARY: "https://cdn.cypress.io/desktop/13.15.0/linux-x64/cypress.zip"
+      BASE_URL: ${{ secrets.BASE_URL }}   # Ensure this secret is set in your repository settings    
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      - name: Setup Node
+      - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
           node-version: "22"
 
-      - name: Clean npm cache
-        run: npm cache clean --force || true
+      # -------------------------------------------------
+      # ✔  FIX 1 — Clear cached Cypress to avoid mismatch
+      # -------------------------------------------------
+      - name: Clear Cypress cache
+        run: npx cypress cache clear
 
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Verify & Install Cypress binary (with retry)
+      # -------------------------------------------------
+      # ✔  FIX 2 — Install EXACT Cypress version from package.json
+      # -------------------------------------------------
+      - name: Install dependencies + Cypress
         run: |
-          for i in 1 2 3; do
-            echo "Attempt $i: Installing Cypress $CYPRESS_VERSION..."
-            npx cypress install --version $CYPRESS_VERSION && break || sleep 15
-          done
+          npm ci
+          npx cypress install
 
-      - name: Fallback Cypress install (if binary fails)
-        if: failure()
+      # -------------------------------------------------
+      # ✔  FIX 3 — Verify app is reachable before running tests
+      # -------------------------------------------------
+      - name: Check application availability
         run: |
-          echo "⚠️ Binary install failed. Attempting npm install fallback..."
-          npm install cypress@$CYPRESS_VERSION --save-dev
+          echo "Testing URL: $BASE_URL"
+          curl -I "$BASE_URL"
 
-      - name: Run Cypress tests
+      # -------------------------------------------------
+      # ✔  FIX 4 — Run Cypress
+      # -------------------------------------------------
+      - name: Run Cypress Tests
         run: |
           npx cypress run \
             --reporter mochawesome \
             --reporter-options reportDir=cypress/reports,overwrite=false,html=false,json=true || true
 
-      - name: Merge & Generate Mochawesome HTML report
+      # -------------------------------------------------
+      # ✔  FIX 5 — Merge mochawesome reports safely
+      # -------------------------------------------------
+      - name: Merge & Generate Mochawesome report
         run: |
           echo "Checking for mochawesome JSON reports..."
+          mkdir -p cypress/reports
           if ls cypress/reports/*.json 1> /dev/null 2>&1; then
-            echo "Merging mochawesome JSON files..."
-            npx mochawesome-merge "cypress/reports/*.json" > cypress/reports/output.json || true
-            if [ -f cypress/reports/output.json ]; then
-              echo "Generating HTML report..."
-              npx mochawesome-report-generator cypress/reports/output.json -f index -o cypress/reports || true
-            else
-              echo "⚠️ output.json not found after merge; skipping HTML generation."
-            fi
+            echo "Merging reports..."
+            npx mochawesome-merge cypress/reports/*.json > cypress/reports/output.json || echo "{}" > cypress/reports/output.json
+            echo "Generating HTML..."
+            npx mochawesome-report-generator cypress/reports/output.json -f index -o cypress/reports
           else
-            echo "⚠️ No mochawesome JSON files found. Skipping merge and report generation."
+            echo "⚠ No mochawesome JSON files found"
           fi
 
       - name: Upload Cypress Test Reports (artifact)
         uses: actions/upload-artifact@v4
         with:
           name: cypress-reports
-          path: |
-            cypress/reports/
-            cypress/reports/screenshots/
-            cypress/reports/videos/
+          path: cypress/reports/
 
 
   # -------------------------------------------------

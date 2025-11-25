@@ -12,7 +12,8 @@ module.exports = defineConfig({
   e2e: {
 
     // ✅ Test pattern
-    specPattern: "cypress/e2e/tests/**/*.cy.js",
+    baseUrl: process.env.BASE_URL,
+    specPattern: "cypress/e2e/tests/**/*.cy.js",  
 
     // ✅ Artifacts
     video: true,
