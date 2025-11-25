@@ -8,7 +8,8 @@ class LoginPage {
     };
   
     visit() {
-      cy.visit('https://retail-staging.48.ie/login'); // full or relative path
+      cy.visit('/login'); // full or relative path
+      cy.url().then(url => cy.log("URL after login = " + url));
     }
   
     enterEmail(email) {

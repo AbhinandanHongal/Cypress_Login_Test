@@ -18,15 +18,12 @@ describe('Order Sims Module - Functional Test Suite', () => {
   });
 
   // ----------------------------------------------------------------
-  beforeEach(() => {
-    cy.session('loginSession', () => {
-      LoginPage.visit();
-      LoginPage.enterEmail(testData.validUser.email);
-      LoginPage.enterPassword(testData.validUser.password);
-      LoginPage.showPassword();
-      LoginPage.clickSignIn();
-      cy.contains('Order History', { timeout: 20000 }).should('be.visible');
-    });
+beforeEach(() => {
+    LoginPage.visit();
+    LoginPage.enterEmail(testData.validUser.email);
+    LoginPage.enterPassword(testData.validUser.password);
+    LoginPage.clickSignIn();
+    cy.contains('Order History', { timeout: 40000 }).should('be.visible');
   });
 
   // ----------------------------------------------------------------
@@ -41,7 +38,6 @@ describe('Order Sims Module - Functional Test Suite', () => {
   // ----------------------------------------------------------------
   it('RSO_FT_15 – Verify placing a valid bulk SIM order (<999)', () => {
     OrderSimsPage.visit();
-
     OrderSimsPage.enterRetailStoreName(testData.orderSims.storeName);
     OrderSimsPage.enterDeliveryAddress(testData.orderSims.deliveryAddress);
     OrderSimsPage.enterNumberOfSims(testData.orderSims.sims); // e.g. 100

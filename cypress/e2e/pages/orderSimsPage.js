@@ -16,10 +16,23 @@ class OrderSimsPage {
     orderHistoryTable: () => cy.get('.order-history-table')
   };
 
-  // Visit Order Sims page directly
   visit() {
-    cy.visit('/order-sims');
+    // Wait for dashboard page to fully load
+    cy.contains('Order History', { timeout: 20000 }).should('be.visible');
+  
+    // Handle collapsed navbar (mobile view)
+    cy.get('button.navbar-toggler').then($btn => {
+      if ($btn.is(':visible')) {
+        cy.wrap($btn).click();
+      }
+    });
+  
+    // Click the Order Sims link (guaranteed to exist)
+    cy.get('a[routerlink="/order-sims"]', { timeout: 20000 })
+      .should('be.visible')
+      .click();
   }
+  
 
   // Select retail store name from dropdown
   enterRetailStoreName(storeName) {
