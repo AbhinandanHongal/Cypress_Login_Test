@@ -92,7 +92,7 @@ jobs:
 
 
   # -------------------------------------------------
-  # 3. Upload to S3
+  # 3. Upload to S3 (ACL FIX APPLIED)
   # -------------------------------------------------
   upload-to-s3:
     name: Upload Reports to S3
@@ -104,7 +104,7 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: cypress-reports
-          path: cypress/reports        # <-- 🔥 FIXED: Ensures folder structure exists
+          path: cypress/reports
 
       - name: Verify artifact
         run: |
@@ -120,10 +120,11 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ap-south-2
 
-      - name: Upload Reports to S3
+      - name: Upload Reports to S3 (NO ACL)
         run: |
           if [ -d "cypress/reports" ]; then
-            aws s3 cp cypress/reports s3://abhinandan-cypress-results/reports/ --recursive --acl public-read
+            echo "Uploading reports..."
+            aws s3 cp cypress/reports s3://abhinandan-cypress-results/reports/ --recursive
           else
             echo "❌ reports folder missing"
           fi
@@ -150,7 +151,7 @@ jobs:
 
 
   # -------------------------------------------------
-  # 5. SNS Notification
+  # 5. SNS Notification (Presigned URL)
   # -------------------------------------------------
   sns-notification:
     name: Send SNS Notification
@@ -186,7 +187,7 @@ jobs:
           fi
 
           if [ -z "$key" ] || [ "$key" = "None" ]; then
-            echo "❌ No HTML report found"
+            echo "❌ No HTML report found."
             exit 0
           fi
 
