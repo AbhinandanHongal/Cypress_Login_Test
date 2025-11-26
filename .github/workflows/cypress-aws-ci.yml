@@ -95,46 +95,45 @@ jobs:
           path: cypress/reports/
 
 
-  # -------------------------------------------------
-  # 3. Upload Reports to AWS S3
-  # -------------------------------------------------
-  upload-to-s3:
-    name: Upload Test Reports to S3
-    runs-on: ubuntu-latest
-    needs: cypress-tests
+# -------------------------------------------------
+# 3. Upload Reports to AWS S3 (LATEST + ARCHIVE)
+# -------------------------------------------------
+upload-to-s3:
+  name: Upload Test Reports to S3
+  runs-on: ubuntu-latest
+  needs: cypress-tests
 
-    steps:
-      - name: Download Test Artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: cypress-reports
+  steps:
+    - name: Download Test Artifact
+      uses: actions/download-artifact@v4
+      with:
+        name: cypress-reports
 
-      - name: Verify artifact after download
-        run: |
-          echo "Workspace:"
-          ls -la || true
-          echo "Reports folder:"
-          ls -la cypress/reports || true
+    - name: Generate timestamp for archive folder
+      id: timestamp
+      run: echo "TS=$(date +'%Y-%m-%d_%H-%M-%S')" >> $GITHUB_ENV
 
-      - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v2
-        with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: ap-south-2
+    - name: Configure AWS Credentials
+      uses: aws-actions/configure-aws-credentials@v2
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: ap-south-2
 
-      - name: Upload reports to S3
-        run: |
-          if [ -d "cypress/reports" ]; then
-            echo "Uploading reports to S3..."
-            aws s3 cp cypress/reports s3://abhinandan-cypress-results/reports/ --recursive --acl public-read || true
-          fi
+    - name: Upload report to S3 (latest + archive)
+      run: |
+        echo "Uploading latest report..."
+        aws s3 rm s3://abhinandan-cypress-results/reports/latest/ --recursive || true
+        aws s3 cp cypress/reports s3://abhinandan-cypress-results/reports/latest/ --recursive --acl public-read
 
-          if [ -f "cypress/reports/index.html" ]; then
-            echo "Uploading index.html with content-type..."
-            aws s3 cp cypress/reports/index.html s3://abhinandan-cypress-results/reports/index.html \
-              --content-type text/html --acl public-read || true
-          fi
+        echo "Uploading archive copy..."
+        aws s3 cp cypress/reports s3://abhinandan-cypress-results/reports/archive/$TS/ --recursive --acl public-read
+
+    - name: Print uploaded paths
+      run: |
+        echo "Latest report: s3://abhinandan-cypress-results/reports/latest/index.html"
+        echo "Archived report: s3://abhinandan-cypress-results/reports/archive/$TS/index.html"
+
 
 
   # -------------------------------------------------
@@ -157,62 +156,70 @@ jobs:
         run: aws codebuild start-build --project-name abhinandan-cypress-build
 
 
-  # -------------------------------------------------
-  # 5. Notify via AWS SNS
-  # -------------------------------------------------
-  sns-notification:
-    name: Send SNS Notification
-    runs-on: ubuntu-latest
-    needs: trigger-codebuild
+# -------------------------------------------------
+# 5. Notify via AWS SNS (Latest + Archive + Cleanup)
+# -------------------------------------------------
+sns-notification:
+  name: Send SNS Notification
+  runs-on: ubuntu-latest
+  needs: upload-to-s3
 
-    steps:
-      - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v2
-        with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: ap-south-2
+  steps:
+    - name: Configure AWS Credentials
+      uses: aws-actions/configure-aws-credentials@v2
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: ap-south-2
 
-      - name: Capture Time
-        id: capture_time
-        run: |
-          echo "START_TIME=$(date -u '+%Y-%m-%d %H:%M:%S UTC')" >> $GITHUB_ENV
-          echo "END_TIME=$(date -u '+%Y-%m-%d %H:%M:%S UTC')" >> $GITHUB_ENV
+    - name: Generate URLs for reports
+      id: urls
+      run: |
+        LATEST_URL=$(aws s3 presign s3://abhinandan-cypress-results/reports/latest/index.html --expires-in 604800)
+        ARCHIVE_URL=$(aws s3 presign s3://abhinandan-cypress-results/reports/archive/$TS/index.html --expires-in 604800)
 
-      - name: Find Cypress HTML report in S3
-        id: find_latest
-        continue-on-error: true
-        run: |
-          key="reports/index.html"
-          exists=$(aws s3api head-object --bucket abhinandan-cypress-results --key "$key" 2>&1 || true)
+        echo "LATEST_URL=$LATEST_URL" >> $GITHUB_ENV
+        echo "ARCHIVE_URL=$ARCHIVE_URL" >> $GITHUB_ENV
 
-          if echo "$exists" | grep -q 'Not Found'; then
-            echo "Searching for fallback HTML..."
-            key=$(aws s3api list-objects-v2 \
-              --bucket abhinandan-cypress-results \
-              --prefix reports/ \
-              --query "Contents[?ends_with(Key, '.html')]|[0].Key" \
-              --output text)
+    - name: Cleanup archive older than 30 days
+      run: |
+        echo "🧹 Cleaning up archives older than 30 days..."
+
+        # Get timestamp of 30 days ago
+        LIMIT=$(date -d "30 days ago" +"%Y-%m-%d")
+
+        # List archive folders
+        FOLDERS=$(aws s3api list-objects-v2 \
+          --bucket abhinandan-cypress-results \
+          --prefix reports/archive/ \
+          --delimiter "/" \
+          --query "CommonPrefixes[].Prefix" \
+          --output text)
+
+        for FOLDER in $FOLDERS; do
+          # Extract date portion from folder name
+          FOLDER_DATE=$(echo $FOLDER | cut -d'/' -f3 | cut -d'_' -f1)
+
+          if [[ "$FOLDER_DATE" < "$LIMIT" ]]; then
+            echo "🔴 Deleting old archive: $FOLDER"
+            aws s3 rm s3://abhinandan-cypress-results/$FOLDER --recursive
+          else
+            echo "🟢 Keeping archive: $FOLDER"
           fi
+        done
 
-          if [ -z "$key" ] || [ "$key" = "None" ]; then
-            echo "No HTML report found. Skipping SNS."
-            exit 0
-          fi
+    - name: Send SNS Notification
+      run: |
+        printf "%s\n\n%s\n%s\n\n%s\n%s\n\n%s\n" \
+          "✅ Cypress CI/CD Pipeline Completed Successfully!" \
+          "Latest Report: $LATEST_URL" \
+          "Archived Report ($TS): $ARCHIVE_URL" \
+          "Note: Archives older than 30 days are automatically deleted." \
+          "HTML reports are publicly accessible." > message.txt
 
-          url=$(aws s3 presign s3://abhinandan-cypress-results/$key --expires-in 604800)
-          echo "REPORT_URL=$url" >> $GITHUB_ENV
-          echo "REPORT_KEY=$key" >> $GITHUB_ENV
+        aws sns publish \
+          --topic-arn arn:aws:sns:ap-south-2:136905788804:abhinandan-cypress-sns \
+          --message file://message.txt
 
-      - name: Send SNS notification
-        if: env.REPORT_URL != ''
-        run: |
-          printf "%s\n\n%s\n%s\n\n%s\n" \
-            "✅ Cypress CI/CD Pipeline Completed!" \
-            "Start Time: $START_TIME" \
-            "End Time: $END_TIME" \
-            "HTML Report: $REPORT_URL" > message.txt
 
-          aws sns publish \
-            --topic-arn arn:aws:sns:ap-south-2:136905788804:abhinandan-cypress-sns \
-            --message file://message.txt
+
