@@ -36,8 +36,8 @@ jobs:
         uses: github/codeql-action/analyze@v3
 
 
-   # -------------------------------------------------
-  # 2. Run Cypress Tests (FIXED)
+  # -------------------------------------------------
+  # 2. Run Cypress Tests
   # -------------------------------------------------
   cypress-tests:
     name: Run Cypress Tests
@@ -46,7 +46,7 @@ jobs:
 
     env:
       NODE_TLS_REJECT_UNAUTHORIZED: "0"
-      BASE_URL: ${{ secrets.BASE_URL }}   # Ensure this secret is set in your repository settings    
+      BASE_URL: ${{ secrets.BASE_URL }}
 
     steps:
       - name: Checkout repository
@@ -57,51 +57,35 @@ jobs:
         with:
           node-version: "22"
 
-      # -------------------------------------------------
-      # ✔  FIX 1 — Clear cached Cypress to avoid mismatch
-      # -------------------------------------------------
       - name: Clear Cypress cache
         run: npx cypress cache clear
 
-      # -------------------------------------------------
-      # ✔  FIX 2 — Install EXACT Cypress version from package.json
-      # -------------------------------------------------
       - name: Install dependencies + Cypress
         run: |
           npm ci
           npx cypress install
 
-      # -------------------------------------------------
-      # ✔  FIX 3 — Verify app is reachable before running tests
-      # -------------------------------------------------
       - name: Check application availability
         run: |
-          echo "Testing URL: $BASE_URL"
+          echo "Checking BASE_URL: $BASE_URL"
           curl -I "$BASE_URL"
 
-      # -------------------------------------------------
-      # ✔  FIX 4 — Run Cypress
-      # -------------------------------------------------
       - name: Run Cypress Tests
         run: |
           npx cypress run \
             --reporter mochawesome \
             --reporter-options reportDir=cypress/reports,overwrite=false,html=false,json=true || true
 
-      # -------------------------------------------------
-      # ✔  FIX 5 — Merge mochawesome reports safely
-      # -------------------------------------------------
       - name: Merge & Generate Mochawesome report
         run: |
-          echo "Checking for mochawesome JSON reports..."
           mkdir -p cypress/reports
           if ls cypress/reports/*.json 1> /dev/null 2>&1; then
-            echo "Merging reports..."
+            echo "Merging mochawesome JSON reports..."
             npx mochawesome-merge cypress/reports/*.json > cypress/reports/output.json || echo "{}" > cypress/reports/output.json
-            echo "Generating HTML..."
+            echo "Generating HTML report..."
             npx mochawesome-report-generator cypress/reports/output.json -f index -o cypress/reports
           else
-            echo "⚠ No mochawesome JSON files found"
+            echo "⚠ No mochawesome JSON files found, skipping merge."
           fi
 
       - name: Upload Cypress Test Reports (artifact)
@@ -111,48 +95,46 @@ jobs:
           path: cypress/reports/
 
 
- # -------------------------------------------------
-# 3. Upload Reports to AWS S3
-# -------------------------------------------------
-upload-to-s3:
-  name: Upload Test Reports to S3
-  runs-on: ubuntu-latest
-  needs: cypress-tests
+  # -------------------------------------------------
+  # 3. Upload Reports to AWS S3
+  # -------------------------------------------------
+  upload-to-s3:
+    name: Upload Test Reports to S3
+    runs-on: ubuntu-latest
+    needs: cypress-tests
 
-  steps:
-    - name: Download Test Artifact
-      uses: actions/download-artifact@v4
-      with:
-        name: cypress-reports
+    steps:
+      - name: Download Test Artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: cypress-reports
 
-    - name: Verify artifact after download
-      run: |
-        echo "Listing workspace:"
-        ls -la || true
-        echo "Listing cypress/reports:"
-        ls -la cypress/reports || true
+      - name: Verify artifact after download
+        run: |
+          echo "Workspace:"
+          ls -la || true
+          echo "Reports folder:"
+          ls -la cypress/reports || true
 
-    - name: Configure AWS Credentials
-      uses: aws-actions/configure-aws-credentials@v2
-      with:
-        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-        aws-region: ap-south-2
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ap-south-2
 
-    - name: Upload reports to S3
-      run: |
-        if [ -d "cypress/reports" ]; then
-          echo "Uploading full reports folder with public access..."
-          aws s3 cp cypress/reports s3://abhinandan-cypress-results/reports/ --recursive --acl public-read || true
-        else
-          echo "⚠️ reports folder not found"
-        fi
+      - name: Upload reports to S3
+        run: |
+          if [ -d "cypress/reports" ]; then
+            echo "Uploading reports to S3..."
+            aws s3 cp cypress/reports s3://abhinandan-cypress-results/reports/ --recursive --acl public-read || true
+          fi
 
-        if [ -f "cypress/reports/index.html" ]; then
-          echo "Uploading index.html with correct content-type and ACL..."
-          aws s3 cp cypress/reports/index.html s3://abhinandan-cypress-results/reports/index.html --content-type text/html --acl public-read || true
-        fi
-
+          if [ -f "cypress/reports/index.html" ]; then
+            echo "Uploading index.html with content-type..."
+            aws s3 cp cypress/reports/index.html s3://abhinandan-cypress-results/reports/index.html \
+              --content-type text/html --acl public-read || true
+          fi
 
 
   # -------------------------------------------------
@@ -184,55 +166,52 @@ upload-to-s3:
     needs: trigger-codebuild
 
     steps:
-      - name: Configure AWS Credentials (for SNS / S3 presign)
+      - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v2
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ap-south-2
 
-      - name: Capture Run Start and End Time
+      - name: Capture Time
         id: capture_time
         run: |
-          START_TIME=$(date -u '+%Y-%m-%d %H:%M:%S UTC')
-          END_TIME=$(date -u '+%Y-%m-%d %H:%M:%S UTC')
-          echo "START_TIME=$START_TIME" >> $GITHUB_ENV
-          echo "END_TIME=$END_TIME" >> $GITHUB_ENV
+          echo "START_TIME=$(date -u '+%Y-%m-%d %H:%M:%S UTC')" >> $GITHUB_ENV
+          echo "END_TIME=$(date -u '+%Y-%m-%d %H:%M:%S UTC')" >> $GITHUB_ENV
 
-      - name: Find Cypress HTML report in S3 and generate pre-signed URL
+      - name: Find Cypress HTML report in S3
         id: find_latest
         continue-on-error: true
         run: |
           key="reports/index.html"
-          echo "Searching for index.html in S3..."
           exists=$(aws s3api head-object --bucket abhinandan-cypress-results --key "$key" 2>&1 || true)
+
           if echo "$exists" | grep -q 'Not Found'; then
-            echo "index.html not found; searching for any .html file..."
-            latest_html=$(aws s3api list-objects-v2 \
+            echo "Searching for fallback HTML..."
+            key=$(aws s3api list-objects-v2 \
               --bucket abhinandan-cypress-results \
               --prefix reports/ \
               --query "Contents[?ends_with(Key, '.html')]|[0].Key" \
               --output text)
-            if [ -z "$latest_html" ] || [ "$latest_html" = "None" ]; then
-              echo "No HTML report found. Skipping SNS notification."
-              exit 0
-            fi
-            key="$latest_html"
           fi
+
+          if [ -z "$key" ] || [ "$key" = "None" ]; then
+            echo "No HTML report found. Skipping SNS."
+            exit 0
+          fi
+
           url=$(aws s3 presign s3://abhinandan-cypress-results/$key --expires-in 604800)
           echo "REPORT_URL=$url" >> $GITHUB_ENV
           echo "REPORT_KEY=$key" >> $GITHUB_ENV
-          echo "✅ Presigned URL: $url"
 
       - name: Send SNS notification
         if: env.REPORT_URL != ''
         run: |
-          printf "%s\n\n%s\n%s\n\n%s\n%s\n\n%s\n" \
-            "✅ Cypress CI/CD Pipeline Completed Successfully!" \
+          printf "%s\n\n%s\n%s\n\n%s\n" \
+            "✅ Cypress CI/CD Pipeline Completed!" \
             "Start Time: $START_TIME" \
             "End Time: $END_TIME" \
-            "Cypress HTML Report: $REPORT_URL" \
-            "Reports uploaded to S3 and CodeBuild triggered successfully." > message.txt
+            "HTML Report: $REPORT_URL" > message.txt
 
           aws sns publish \
             --topic-arn arn:aws:sns:ap-south-2:136905788804:abhinandan-cypress-sns \
