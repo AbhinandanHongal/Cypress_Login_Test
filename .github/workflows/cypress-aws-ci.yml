@@ -169,11 +169,11 @@ jobs:
       - name: Find latest HTML Report
         id: find_latest
         run: |
-          echo "Searching for NEW Mochawesome report in reports/html/..."
+          echo "Searching for NEW Mochawesome report in reports/..."
 
           html_key=$(aws s3api list-objects-v2 \
             --bucket abhinandan-cypress-results \
-            --prefix reports/html/ \
+            --prefix reports/ \
             --query "reverse(sort_by(Contents[?ends_with(Key, '.html')], &LastModified))[0].Key" \
             --output text)
 
