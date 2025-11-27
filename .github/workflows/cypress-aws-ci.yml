@@ -135,8 +135,7 @@ jobs:
           aws s3 rm s3://abhinandan-cypress-results/videos/ --recursive || true
 
       - name: Upload Reports
-        run: |
-          aws s3 cp cypress/reports s3://abhinandan-cypress-results/reports/ --recursive
+        run: aws s3 cp cypress/reports s3://abhinandan-cypress-results/reports/ --recursive
 
       - name: Upload Screenshots (if exist)
         run: |
@@ -177,7 +176,7 @@ jobs:
   sns-notification:
     name: Send SNS Notification
     runs-on: ubuntu-latest
-    needs: 
+    needs:
       - trigger-codebuild
       - cypress-tests
 
@@ -191,8 +190,7 @@ jobs:
 
       - name: Capture End Time
         id: capture_end
-        run: |
-          echo "end=$(date -u +"%Y-%m-%d %H:%M:%S UTC")" >> $GITHUB_OUTPUT
+        run: echo "end=$(date -u +"%Y-%m-%d %H:%M:%S UTC")" >> $GITHUB_OUTPUT
 
       - name: Build Screenshot & Video Links
         id: build_links
@@ -220,7 +218,7 @@ jobs:
         run: |
           PUBLIC_URL="https://abhinandan-cypress-results.s3.ap-south-2.amazonaws.com/reports/index.html"
 
-          MESSAGE="CAUTION! This message originated from outside of Torry Harris. Please treat hyperlinks, attachments and instructions in this email with caution.
+          cat << 'EOF' > message.txt
 
 ✅ Cypress CI/CD Pipeline Completed!
 
@@ -228,15 +226,15 @@ Start Time: ${{ needs.cypress-tests.outputs.pipeline_start }}
 End Time:   ${{ steps.capture_end.outputs.end }}
 
 HTML Report:
-$PUBLIC_URL
+https://abhinandan-cypress-results.s3.ap-south-2.amazonaws.com/reports/index.html
 
 Screenshots:
 ${{ steps.build_links.outputs.shots }}
 
 Videos:
 ${{ steps.build_links.outputs.videos }}
-"
+EOF
 
           aws sns publish \
             --topic-arn arn:aws:sns:ap-south-2:136905788804:abhinandan-cypress-sns \
-            --message "$MESSAGE"
+            --message file://message.txt
