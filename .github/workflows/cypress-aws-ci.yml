@@ -44,11 +44,19 @@ jobs:
     runs-on: ubuntu-latest
     needs: static-analysis
 
+    outputs:
+      pipeline_start: ${{ steps.capture_start.outputs.start }}
+
     env:
       NODE_TLS_REJECT_UNAUTHORIZED: "0"
       BASE_URL: ${{ secrets.BASE_URL }}
 
     steps:
+      - name: Capture Start Time
+        id: capture_start
+        run: |
+          echo "start=$(date -u +"%Y-%m-%d %H:%M:%S UTC")" >> $GITHUB_OUTPUT
+
       - name: Checkout repository
         uses: actions/checkout@v3
 
@@ -120,13 +128,26 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ap-south-2
 
-      - name: Upload Reports to S3 (Public Folder)
+      - name: Clear previous run data
         run: |
-          if [ -d "cypress/reports" ]; then
-            echo "Uploading reports..."
-            aws s3 cp cypress/reports s3://abhinandan-cypress-results/reports/ --recursive
-          else
-            echo "❌ reports folder missing"
+          aws s3 rm s3://abhinandan-cypress-results/reports/ --recursive || true
+          aws s3 rm s3://abhinandan-cypress-results/screenshots/ --recursive || true
+          aws s3 rm s3://abhinandan-cypress-results/videos/ --recursive || true
+
+      - name: Upload Reports
+        run: |
+          aws s3 cp cypress/reports s3://abhinandan-cypress-results/reports/ --recursive
+
+      - name: Upload Screenshots (if exist)
+        run: |
+          if [ -d "cypress/screenshots" ]; then
+            aws s3 cp cypress/screenshots s3://abhinandan-cypress-results/screenshots/ --recursive
+          fi
+
+      - name: Upload Videos (if exist)
+        run: |
+          if [ -d "cypress/videos" ]; then
+            aws s3 cp cypress/videos s3://abhinandan-cypress-results/videos/ --recursive
           fi
 
 
@@ -151,12 +172,14 @@ jobs:
 
 
   # -------------------------------------------------
-  # 5. SNS Notification (Public URL)
+  # 5. SNS Notification
   # -------------------------------------------------
   sns-notification:
     name: Send SNS Notification
     runs-on: ubuntu-latest
-    needs: trigger-codebuild
+    needs: 
+      - trigger-codebuild
+      - cypress-tests
 
     steps:
       - name: Configure AWS Credentials
@@ -166,10 +189,53 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ap-south-2
 
-      - name: Send SNS notification with public report link
+      - name: Capture End Time
+        id: capture_end
+        run: |
+          echo "end=$(date -u +"%Y-%m-%d %H:%M:%S UTC")" >> $GITHUB_OUTPUT
+
+      - name: Build Screenshot & Video Links
+        id: build_links
+        run: |
+          SCREENSHOT_LINKS=""
+          VIDEO_LINKS=""
+
+          for file in $(aws s3 ls s3://abhinandan-cypress-results/screenshots/ --recursive | awk '{print $4}'); do
+            SCREENSHOT_LINKS+="https://abhinandan-cypress-results.s3.ap-south-2.amazonaws.com/$file\n"
+          done
+
+          for file in $(aws s3 ls s3://abhinandan-cypress-results/videos/ --recursive | awk '{print $4}'); do
+            VIDEO_LINKS+="https://abhinandan-cypress-results.s3.ap-south-2.amazonaws.com/$file\n"
+          done
+
+          echo "shots<<EOF" >> $GITHUB_OUTPUT
+          echo -e "$SCREENSHOT_LINKS" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+
+          echo "videos<<EOF" >> $GITHUB_OUTPUT
+          echo -e "$VIDEO_LINKS" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+
+      - name: Send SNS Notification
         run: |
           PUBLIC_URL="https://abhinandan-cypress-results.s3.ap-south-2.amazonaws.com/reports/index.html"
-          MESSAGE="Your latest Cypress test report is ready: $PUBLIC_URL"
+
+          MESSAGE="CAUTION! This message originated from outside of Torry Harris. Please treat hyperlinks, attachments and instructions in this email with caution.
+
+✅ Cypress CI/CD Pipeline Completed!
+
+Start Time: ${{ needs.cypress-tests.outputs.pipeline_start }}
+End Time:   ${{ steps.capture_end.outputs.end }}
+
+HTML Report:
+$PUBLIC_URL
+
+Screenshots:
+${{ steps.build_links.outputs.shots }}
+
+Videos:
+${{ steps.build_links.outputs.videos }}
+"
 
           aws sns publish \
             --topic-arn arn:aws:sns:ap-south-2:136905788804:abhinandan-cypress-sns \
