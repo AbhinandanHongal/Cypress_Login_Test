@@ -120,7 +120,7 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ap-south-2
 
-      - name: Upload Reports to S3 (NO ACL)
+      - name: Upload Reports to S3 (Public Folder)
         run: |
           if [ -d "cypress/reports" ]; then
             echo "Uploading reports..."
@@ -151,7 +151,7 @@ jobs:
 
 
   # -------------------------------------------------
-  # 5. SNS Notification (Presigned URL)
+  # 5. SNS Notification (Public URL)
   # -------------------------------------------------
   sns-notification:
     name: Send SNS Notification
@@ -166,29 +166,10 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ap-south-2
 
-      - name: Find latest HTML Report
-        id: find_latest
+      - name: Send SNS notification with public report link
         run: |
-          echo "Searching for NEW Mochawesome report in reports/..."
+          PUBLIC_URL="https://abhinandan-cypress-results.s3.ap-south-2.amazonaws.com/reports/index.html"
 
-          html_key=$(aws s3api list-objects-v2 \
-            --bucket abhinandan-cypress-results \
-            --prefix reports/ \
-            --query "reverse(sort_by(Contents[?ends_with(Key, '.html')], &LastModified))[0].Key" \
-            --output text)
-
-          if [ "$html_key" = "None" ] || [ -z "$html_key" ]; then
-            echo "New report not found. Falling back to reports/index.html"
-            html_key="reports/index.html"
-          fi
-
-          echo "HTML_REPORT_KEY=$html_key" >> $GITHUB_ENV
-
-          url=$(aws s3 presign s3://abhinandan-cypress-results/$html_key --expires-in 604800)
-          echo "REPORT_URL=$url" >> $GITHUB_ENV
-
-      - name: Send SNS notification
-        run: |
           aws sns publish \
             --topic-arn arn:aws:sns:ap-south-2:136905788804:abhinandan-cypress-sns \
-            --message "Your latest HTML Cypress report is ready: $REPORT_URL"
+            --message "Your latest Cypress test report is ready:\n\n$PUBLIC_URL\n"
