@@ -169,7 +169,8 @@ jobs:
       - name: Send SNS notification with public report link
         run: |
           PUBLIC_URL="https://abhinandan-cypress-results.s3.ap-south-2.amazonaws.com/reports/index.html"
+          MESSAGE="Your latest Cypress test report is ready: $PUBLIC_URL"
 
           aws sns publish \
             --topic-arn arn:aws:sns:ap-south-2:136905788804:abhinandan-cypress-sns \
-            --message "Your latest Cypress test report is ready:\n\n$PUBLIC_URL\n"
+            --message "$MESSAGE"
