@@ -215,20 +215,20 @@ jobs:
           PUBLIC_URL="https://abhinandan-cypress-results.s3.ap-south-2.amazonaws.com/reports/index.html"
 
           cat << EOF > message.txt
-✅ Cypress CI/CD Pipeline Completed!
 
-Start Time: ${{ needs.cypress-tests.outputs.pipeline_start }}
-End Time:   ${{ steps.capture_end.outputs.end }}
 
-HTML Report:
-$PUBLIC_URL
+  Start Time: ${{ needs.cypress-tests.outputs.pipeline_start }}
+  End Time:   ${{ steps.capture_end.outputs.end }}
 
-Screenshots:
-${{ steps.build_links.outputs.shots }}
+  HTML Report:
+   $PUBLIC_URL
 
-Videos:
-${{ steps.build_links.outputs.videos }}
-EOF
+  Screenshots:
+   ${{ steps.build_links.outputs.shots }}
+
+  Videos:
+   ${{ steps.build_links.outputs.videos }}
+   EOF
 
           aws sns publish \
             --topic-arn arn:aws:sns:ap-south-2:136905788804:abhinandan-cypress-sns \
