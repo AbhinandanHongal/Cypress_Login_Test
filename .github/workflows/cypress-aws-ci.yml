@@ -44,18 +44,13 @@ jobs:
     runs-on: ubuntu-latest
     needs: static-analysis
 
-    outputs:
-      pipeline_start: ${{ steps.capture_start.outputs.start }}
-
     env:
       NODE_TLS_REJECT_UNAUTHORIZED: "0"
       BASE_URL: ${{ secrets.BASE_URL }}
 
     steps:
-
       - name: Capture Start Time
-        id: capture_start
-        run: echo "start=$(date -u +"%Y-%m-%d %H:%M:%S UTC")" >> $GITHUB_OUTPUT
+        run: echo "PIPELINE_START_TIME=$(date -u +"%Y-%m-%d %H:%M:%S UTC")" >> $GITHUB_ENV
 
       - name: Checkout repository
         uses: actions/checkout@v3
@@ -68,7 +63,7 @@ jobs:
       - name: Clear Cypress cache
         run: npx cypress cache clear
 
-      - name: Install dependencies
+      - name: Install dependencies and Cypress
         run: |
           npm ci
           npx cypress install
@@ -89,7 +84,7 @@ jobs:
             npx mochawesome-merge cypress/reports/*.json > cypress/reports/output.json || echo "{}" > cypress/reports/output.json
             npx mochawesome-report-generator cypress/reports/output.json -f index -o cypress/reports
           else
-            echo "⚠️ No mochawesome JSON found"
+            echo "⚠ No mochawesome JSON files found"
           fi
 
       - name: Upload Cypress Reports (Artifact)
@@ -108,7 +103,6 @@ jobs:
     needs: cypress-tests
 
     steps:
-
       - name: Download Test Artifact
         uses: actions/download-artifact@v4
         with:
@@ -122,25 +116,12 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ap-south-2
 
-      - name: Clear previous run data
+      - name: Upload Reports to S3 (Public Folder)
         run: |
-          aws s3 rm s3://abhinandan-cypress-results/reports/ --recursive || true
-          aws s3 rm s3://abhinandan-cypress-results/screenshots/ --recursive || true
-          aws s3 rm s3://abhinandan-cypress-results/videos/ --recursive || true
-
-      - name: Upload Reports
-        run: aws s3 cp cypress/reports s3://abhinandan-cypress-results/reports/ --recursive
-
-      - name: Upload Screenshots (if exist)
-        run: |
-          if [ -d "cypress/screenshots" ]; then
-            aws s3 cp cypress/screenshots s3://abhinandan-cypress-results/screenshots/ --recursive
-          fi
-
-      - name: Upload Videos (if exist)
-        run: |
-          if [ -d "cypress/videos" ]; then
-            aws s3 cp cypress/videos s3://abhinandan-cypress-results/videos/ --recursive
+          if [ -d "cypress/reports" ]; then
+            aws s3 cp cypress/reports s3://abhinandan-cypress-results/reports/ --recursive
+          else
+            echo "❌ reports folder missing"
           fi
 
 
@@ -153,7 +134,6 @@ jobs:
     needs: upload-to-s3
 
     steps:
-
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v2
         with:
@@ -166,17 +146,14 @@ jobs:
 
 
   # -------------------------------------------------
-  # 5. SNS Notification
+  # 5. SNS Notification (Final Message)
   # -------------------------------------------------
   sns-notification:
     name: Send SNS Notification
     runs-on: ubuntu-latest
-    needs:
-      - trigger-codebuild
-      - cypress-tests
+    needs: trigger-codebuild
 
     steps:
-
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v2
         with:
@@ -185,50 +162,21 @@ jobs:
           aws-region: ap-south-2
 
       - name: Capture End Time
-        id: capture_end
-        run: echo "end=$(date -u +"%Y-%m-%d %H:%M:%S UTC")" >> $GITHUB_OUTPUT
+        run: echo "PIPELINE_END_TIME=$(date -u +"%Y-%m-%d %H:%M:%S UTC")" >> $GITHUB_ENV
 
-      - name: Build Screenshot & Video Links
-        id: build_links
-        run: |
-          SCREENSHOT_LINKS=""
-          VIDEO_LINKS=""
-
-          for file in $(aws s3 ls s3://abhinandan-cypress-results/screenshots/ --recursive | awk '{print $4}'); do
-            SCREENSHOT_LINKS+="https://abhinandan-cypress-results.s3.ap-south-2.amazonaws.com/$file\n"
-          done
-
-          for file in $(aws s3 ls s3://abhinandan-cypress-results/videos/ --recursive | awk '{print $4}'); do
-            VIDEO_LINKS+="https://abhinandan-cypress-results.s3.ap-south-2.amazonaws.com/$file\n"
-          done
-
-          echo "shots<<EOF" >> $GITHUB_OUTPUT
-          echo -e "$SCREENSHOT_LINKS" >> $GITHUB_OUTPUT
-          echo "EOF" >> $GITHUB_OUTPUT
-
-          echo "videos<<EOF" >> $GITHUB_OUTPUT
-          echo -e "$VIDEO_LINKS" >> $GITHUB_OUTPUT
-          echo "EOF" >> $GITHUB_OUTPUT
-
-      - name: Send SNS Notification
+      - name: Send SNS notification with public report link
         run: |
           PUBLIC_URL="https://abhinandan-cypress-results.s3.ap-south-2.amazonaws.com/reports/index.html"
 
           cat << EOF > message.txt
+Cypress CI/CD Pipeline Completed!
 
+Start Time: $PIPELINE_START_TIME
+End Time:   $PIPELINE_END_TIME
 
-  Start Time: ${{ needs.cypress-tests.outputs.pipeline_start }}
-  End Time:   ${{ steps.capture_end.outputs.end }}
-
-  HTML Report:
-   $PUBLIC_URL
-
-  Screenshots:
-   ${{ steps.build_links.outputs.shots }}
-
-  Videos:
-   ${{ steps.build_links.outputs.videos }}
-   EOF
+HTML Report:
+$PUBLIC_URL
+EOF
 
           aws sns publish \
             --topic-arn arn:aws:sns:ap-south-2:136905788804:abhinandan-cypress-sns \
