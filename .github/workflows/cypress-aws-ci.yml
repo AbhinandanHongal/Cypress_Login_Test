@@ -171,7 +171,7 @@ jobs:
           cat << EOF > message.txt
 
 Start Time: $PIPELINE_START_TIME
-End Time:   $PIPELINE_END_TIME
+End Time: $PIPELINE_END_TIME
 
 HTML Report: $PUBLIC_URL
  EOF
