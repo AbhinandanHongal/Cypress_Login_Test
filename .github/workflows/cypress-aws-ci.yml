@@ -202,7 +202,9 @@ HTML Report: $PUBLIC_URL
 Screenshots: $SCREENSHOT_LINKS
 Videos: $VIDEO_LINKS
 EOF
+
           aws sns publish \
             --topic-arn arn:aws:sns:ap-south-2:136905788804:abhinandan-cypress-sns \
             --message file://message.txt
+
 
