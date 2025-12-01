@@ -13,9 +13,9 @@ permissions:
 
 jobs:
 
-  # ------------------------------
+  # -------------------------------------------------
   # 1. Static Code Analysis (CodeQL)
-  # ------------------------------
+  # -------------------------------------------------
   static-analysis:
     name: Static Code Analysis
     runs-on: ubuntu-latest
@@ -35,9 +35,10 @@ jobs:
       - name: Perform CodeQL Analysis
         uses: github/codeql-action/analyze@v3
 
-  # ------------------------------
+
+  # -------------------------------------------------
   # 2. Run Cypress Tests
-  # ------------------------------
+  # -------------------------------------------------
   cypress-tests:
     name: Run Cypress Tests
     runs-on: ubuntu-latest
@@ -92,9 +93,10 @@ jobs:
           name: cypress-reports
           path: cypress/reports/
 
-  # ------------------------------
+
+  # -------------------------------------------------
   # 3. Upload to S3
-  # ------------------------------
+  # -------------------------------------------------
   upload-to-s3:
     name: Upload Reports to S3
     runs-on: ubuntu-latest
@@ -114,25 +116,38 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ap-south-2
 
-      - name: Upload Reports to S3
+      - name: Upload Reports to S3 (Public Folder)
         run: |
-          aws s3 cp cypress/reports s3://abhinandan-cypress-results/reports/ --recursive
-
-      - name: Upload Screenshots to S3
-        run: |
-          if [ -d "cypress/screenshots" ]; then
-            aws s3 cp cypress/screenshots s3://abhinandan-cypress-results/screenshots/ --recursive
+          if [ -d "cypress/reports" ]; then
+            aws s3 cp cypress/reports s3://abhinandan-cypress-results/reports/ --recursive
+          else
+            echo "❌ reports folder missing"
           fi
 
-      - name: Upload Videos to S3
+      - name: Build Screenshot Links
         run: |
-          if [ -d "cypress/videos" ]; then
-            aws s3 cp cypress/videos s3://abhinandan-cypress-results/videos/ --recursive
-          fi
+          SCREENSHOT_LINKS=""
+          for file in $(aws s3 ls s3://abhinandan-cypress-results/screenshots/ --recursive | awk '{print $4}'); do
+            SCREENSHOT_LINKS+="https://abhinandan-cypress-results.s3.ap-south-2.amazonaws.com/$file\n"
+          done
+          echo "SCREENSHOT_LINKS<<EOF" >> $GITHUB_ENV
+          echo -e "$SCREENSHOT_LINKS" >> $GITHUB_ENV
+          echo "EOF" >> $GITHUB_ENV
 
-  # ------------------------------
+      - name: Build Video Links
+        run: |
+          VIDEO_LINKS=""
+          for file in $(aws s3 ls s3://abhinandan-cypress-results/videos/ --recursive | awk '{print $4}'); do
+            VIDEO_LINKS+="https://abhinandan-cypress-results.s3.ap-south-2.amazonaws.com/$file\n"
+          done
+          echo "VIDEO_LINKS<<EOF" >> $GITHUB_ENV
+          echo -e "$VIDEO_LINKS" >> $GITHUB_ENV
+          echo "EOF" >> $GITHUB_ENV
+
+
+  # -------------------------------------------------
   # 4. Trigger CodeBuild
-  # ------------------------------
+  # -------------------------------------------------
   trigger-codebuild:
     name: Trigger CodeBuild Project
     runs-on: ubuntu-latest
@@ -149,13 +164,16 @@ jobs:
       - name: Trigger CodeBuild
         run: aws codebuild start-build --project-name abhinandan-cypress-build
 
-  # ------------------------------
-  # 5. SNS Notification (Final Message)
-  # ------------------------------
+
+  # -------------------------------------------------
+  # 5. SNS Notification
+  # -------------------------------------------------
   sns-notification:
     name: Send SNS Notification
     runs-on: ubuntu-latest
-    needs: trigger-codebuild
+    needs:
+      - trigger-codebuild
+      - upload-to-s3
 
     steps:
       - name: Configure AWS Credentials
@@ -168,43 +186,27 @@ jobs:
       - name: Capture End Time
         run: echo "PIPELINE_END_TIME=$(date -u +"%Y-%m-%d %H:%M:%S UTC")" >> $GITHUB_ENV
 
-      - name: Build screenshot and video links
-        run: |
-          SCREENSHOT_LINKS=""
-          VIDEO_LINKS=""
-
-          for file in $(aws s3 ls s3://abhinandan-cypress-results/screenshots/ --recursive | awk '{print $4}'); do
-            SCREENSHOT_LINKS+="https://abhinandan-cypress-results.s3.ap-south-2.amazonaws.com/$file\n"
-          done
-
-          for file in $(aws s3 ls s3://abhinandan-cypress-results/videos/ --recursive | awk '{print $4}'); do
-            VIDEO_LINKS+="https://abhinandan-cypress-results.s3.ap-south-2.amazonaws.com/$file\n"
-          done
-
-          echo "SCREENSHOT_LINKS<<EOF" >> $GITHUB_ENV
-          echo -e "$SCREENSHOT_LINKS" >> $GITHUB_ENV
-          echo "EOF" >> $GITHUB_ENV
-
-          echo "VIDEO_LINKS<<EOF" >> $GITHUB_ENV
-          echo -e "$VIDEO_LINKS" >> $GITHUB_ENV
-          echo "EOF" >> $GITHUB_ENV
-
       - name: Send SNS notification
         run: |
           PUBLIC_URL="https://abhinandan-cypress-results.s3.ap-south-2.amazonaws.com/reports/index.html"
 
-          cat << EOF > message.txt
-Cypress CI/CD Pipeline Completed!
+          MSG="Cypress CI/CD Pipeline Completed!
 
-Start Time: $PIPELINE_START_TIME
-End Time:   $PIPELINE_END_TIME
-HTML Report: $PUBLIC_URL
-Screenshots: $SCREENSHOT_LINKS
-Videos: $VIDEO_LINKS
-EOF
+          Start Time: $PIPELINE_START_TIME
+          End Time:   $PIPELINE_END_TIME
+
+          HTML Report:
+          $PUBLIC_URL
+
+          Screenshots:
+          $SCREENSHOT_LINKS
+
+          Videos:
+          $VIDEO_LINKS
+          "
+
+          echo "$MSG" > message.txt
 
           aws sns publish \
             --topic-arn arn:aws:sns:ap-south-2:136905788804:abhinandan-cypress-sns \
             --message file://message.txt
-
-
