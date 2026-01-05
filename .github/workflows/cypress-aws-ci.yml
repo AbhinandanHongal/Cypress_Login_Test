@@ -250,6 +250,11 @@ jobs:
 
           MSG="Cypress CI/CD Pipeline Completed!
 
+          Status: $TEST_STATUS
+
+          Test Summary:
+          $TEST_SUMMARY
+
           Start Time: $PIPELINE_START_TIME
           End Time:   $PIPELINE_END_TIME
 
