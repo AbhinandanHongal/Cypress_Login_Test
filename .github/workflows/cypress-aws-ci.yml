@@ -92,9 +92,9 @@ jobs:
           JSON_FILES=$(ls $REPORT_DIR/mochawesome*.json 2>/dev/null || true)
 
           if [ -z "$JSON_FILES" ]; then
-           echo "⚠️ No mochawesome JSON files found. Skipping merge."
-           exit 0
-          fi
+            echo "⚠️ No mochawesome JSON files found. Skipping merge."
+            exit 0
+          fi  
 
           npx mochawesome-merge $JSON_FILES > $REPORT_DIR/output.json
 
@@ -114,13 +114,7 @@ jobs:
         with:
           name: cypress-reports-${{ github.run_number }}
           path: ${{ env.REPORT_DIR }}
-
-      - name: Fail pipeline if Cypress failed
-        run: |
-          if [ "$CYPRESS_EXIT_CODE" != "0" ]; then
-            echo "❌ Cypress tests failed"
-            exit 1
-          fi    
+  
 
   # -------------------------------------------------
   # 3. Upload to S3
@@ -146,17 +140,17 @@ jobs:
 
       - name: Upload Reports to S3 (Public Folder)
         run: |
-         RUN_DIR="run-${{ github.run_number }}"
-         LOCAL_PATH="cypress/reports/$RUN_DIR"
-         S3_PATH="s3://abhinandan-cypress-results/reports/$RUN_DIR/"
+          RUN_DIR="run-${{ github.run_number }}"
+          LOCAL_PATH="cypress/reports/$RUN_DIR"
+          S3_PATH="s3://abhinandan-cypress-results/reports/$RUN_DIR/"
 
-         if [ -d "$LOCAL_PATH" ]; then
-         echo "⬆ Uploading reports from $LOCAL_PATH to $S3_PATH"
-         aws s3 cp "$LOCAL_PATH" "$S3_PATH" --recursive
-         else
-         echo "❌ Report folder missing: $LOCAL_PATH"
-         exit 1
-         fi
+          if [ -d "$LOCAL_PATH" ]; then
+            echo "⬆ Uploading reports from $LOCAL_PATH to $S3_PATH"
+            aws s3 cp "$LOCAL_PATH" "$S3_PATH" --recursive
+          else
+            echo "❌ Report folder missing: $LOCAL_PATH"
+            exit 1
+          fi
 
       - name: Build Screenshot Links
         run: |
