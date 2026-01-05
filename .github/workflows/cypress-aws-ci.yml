@@ -109,32 +109,35 @@ jobs:
           echo "✅ Mochawesome report generated at $REPORT_DIR"
       
 
-      - name: Extract test summary and status
+      - name: Generate test summary
         run: |
-          node <<EOF
+          node <<'NODE_EOF'
           const fs = require('fs');
-          const report = JSON.parse(fs.readFileSync('$REPORT_DIR/output.json','utf8'));
+
+          const report = JSON.parse(
+          fs.readFileSync(process.env.REPORT_DIR + '/output.json', 'utf8')
+          );
           const s = report.stats;
-
           const status = s.failures > 0 ? 'FAILED' : 'PASSED';
-
           const summary = `
-          Total: ${s.tests}
-          Passed: ${s.passes}
-          Failed: ${s.failures}
-          Skipped: ${s.pending || 0}
-          Duration: ${Math.round((s.duration || 0) / 1000)}s
-          `.trim();
+        Total: ${s.tests}
+        Passed: ${s.passes}
+        Failed: ${s.failures}
+        Skipped: ${s.pending || 0}
+        Duration: ${Math.round((s.duration || 0) / 1000)}s
+         `.trim();
 
-          fs.appendFileSync(
-          process.env.GITHUB_ENV,
-          `TEST_STATUS=${status}\n`
-          );
+           fs.appendFileSync(
+            process.env.GITHUB_ENV,
+            `TEST_STATUS=${status}\n`
+         );
 
-          fs.appendFileSync(
-          process.env.GITHUB_ENV,
-          `TEST_SUMMARY<<EOF\n${summary}\nEOF\n`
-          );
+         fs.appendFileSync(
+           process.env.GITHUB_ENV,
+           `TEST_SUMMARY<<SUMMARY_EOF\n${summary}\nSUMMARY_EOF\n`
+         );
+         NODE_EOF
+
 
       - name: Upload Cypress Reports (Artifact)
         uses: actions/upload-artifact@v4
