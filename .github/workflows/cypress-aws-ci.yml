@@ -35,16 +35,6 @@ jobs:
       - name: Perform CodeQL Analysis
         uses: github/codeql-action/analyze@v3
 
-      - name: Clean previous Cypress reports
-        run: rm -rf cypress/reports
-
-      - name: Prepare report directory
-        run: |
-            rm -rf $REPORT_DIR
-            mkdir -p $REPORT_DIR
-
-
-
   # -------------------------------------------------
   # 2. Run Cypress Tests
   # -------------------------------------------------
@@ -71,6 +61,12 @@ jobs:
         with:
           node-version: "22"
 
+      - name: Prepare report directory
+        run: |
+          echo "Using REPORT_DIR=$REPORT_DIR"
+          rm -rf "$REPORT_DIR"
+          mkdir -p "$REPORT_DIR"  
+
       - name: Clear Cypress cache
         run: npx cypress cache clear
 
@@ -84,30 +80,33 @@ jobs:
 
       - name: Run Cypress Tests
         run: |
+          set +e
           npx cypress run \
             --reporter mochawesome \
-            --reporter-options reportDir=$REPORT_DIR,overwrite=false,html=false,json=true || true
+            --reporter-options reportDir=$REPORT_DIR,overwrite=false,html=false,json=true
+          echo "CYPRESS_EXIT_CODE=$?" >> $GITHUB_ENV
+          set -e
 
       - name: Merge mochawesome reports
         run: |
-         JSON_FILES=$(ls $REPORT_DIR/mochawesome*.json 2>/dev/null || true)
+          JSON_FILES=$(ls $REPORT_DIR/mochawesome*.json 2>/dev/null || true)
 
-         if [ -z "$JSON_FILES" ]; then
-         echo "⚠️ No mochawesome JSON files found. Skipping merge."
-         exit 0
-         fi
+          if [ -z "$JSON_FILES" ]; then
+           echo "⚠️ No mochawesome JSON files found. Skipping merge."
+           exit 0
+          fi
 
-         npx mochawesome-merge $JSON_FILES > $REPORT_DIR/output.json
+          npx mochawesome-merge $JSON_FILES > $REPORT_DIR/output.json
 
-         node -e "JSON.parse(require('fs').readFileSync('$REPORT_DIR/output.json','utf8'))"
+          node -e "JSON.parse(require('fs').readFileSync('$REPORT_DIR/output.json','utf8'))"
 
-         npx mochawesome-report-generator \
-         $REPORT_DIR/output.json \
-         --reportDir $REPORT_DIR \
-         --reportFilename index \
-         --charts true
+          npx mochawesome-report-generator \
+          $REPORT_DIR/output.json \
+          --reportDir $REPORT_DIR \
+          --reportFilename index \
+          --charts true
 
-         echo "✅ Mochawesome report generated at $REPORT_DIR"
+          echo "✅ Mochawesome report generated at $REPORT_DIR"
 
 
       - name: Upload Cypress Reports (Artifact)
@@ -115,6 +114,13 @@ jobs:
         with:
           name: cypress-reports-${{ github.run_number }}
           path: ${{ env.REPORT_DIR }}
+
+      - name: Fail pipeline if Cypress failed
+        run: |
+          if [ "$CYPRESS_EXIT_CODE" != "0" ]; then
+            echo "❌ Cypress tests failed"
+            exit 1
+          fi    
 
   # -------------------------------------------------
   # 3. Upload to S3
