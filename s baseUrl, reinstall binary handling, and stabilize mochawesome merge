@@ -1,0 +1,110 @@
+warning: in the working copy of 'cypress.config.js', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'cypress/support/e2e.js', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'package-lock.json', LF will be replaced by CRLF the next time Git touches it
+[1mdiff --git a/cypress.config.js b/cypress.config.js[m
+[1mindex 83399a3..24cbcc4 100644[m
+[1m--- a/cypress.config.js[m
+[1m+++ b/cypress.config.js[m
+[36m@@ -2,18 +2,18 @@[m [mconst { defineConfig } = require("cypress");[m
+ [m
+ module.exports = defineConfig({[m
+   reporter: "mochawesome",[m
+[32m+[m
+   reporterOptions: {[m
+     reportDir: "cypress/reports",[m
+     overwrite: false,[m
+     html: false, // HTML generated separately using marge[m
+[31m-    json: true,  // JSON output required for merging[m
+[32m+[m[32m    json: true, // JSON output required for merging[m
+   },[m
+ [m
+   e2e: {[m
+[31m-[m
+     // ✅ Test pattern[m
+     baseUrl: process.env.BASE_URL,[m
+[31m-    specPattern: "cypress/e2e/tests/**/*.cy.js",  [m
+[32m+[m[32m    specPattern: "cypress/e2e/tests/**/*.cy.js",[m
+ [m
+     // ✅ Artifacts[m
+     video: true,[m
+[36m@@ -37,4 +37,12 @@[m [mmodule.exports = defineConfig({[m
+       return config;[m
+     },[m
+   },[m
+[32m+[m
+[32m+[m[32m  component: {[m
+[32m+[m[32m    devServer: {[m
+[32m+[m[32m      framework: "angular",[m
+[32m+[m[32m      bundler: "webpack",[m
+[32m+[m[32m    },[m
+[32m+[m[32m    specPattern: "**/*.cy.ts",[m
+[32m+[m[32m  },[m
+ });[m
+[1mdiff --git a/cypress/e2e/pages/loginPage.js b/cypress/e2e/pages/loginPage.js[m
+[1mindex d8423bc..1692740 100644[m
+[1m--- a/cypress/e2e/pages/loginPage.js[m
+[1m+++ b/cypress/e2e/pages/loginPage.js[m
+[36m@@ -8,7 +8,7 @@[m [mclass LoginPage {[m
+     };[m
+   [m
+     visit() {[m
+[31m-      cy.visit('/login'); // full or relative path[m
+[32m+[m[32m      cy.visit('https://retail-staging.48.ie/login'); // full or relative path[m
+       cy.url().then(url => cy.log("URL after login = " + url));[m
+     }[m
+   [m
+[1mdiff --git a/cypress/support/e2e.js b/cypress/support/e2e.js[m
+[1mindex 1d41c07..381b36d 100644[m
+[1m--- a/cypress/support/e2e.js[m
+[1m+++ b/cypress/support/e2e.js[m
+[36m@@ -15,4 +15,5 @@[m
+ [m
+ // Import commands.js using ES2015 syntax:[m
+ import './commands'[m
+[32m+[m[32mimport './smartLocators';[m
+ [m
+[1mdiff --git a/cypress/support/smartLocators.js b/cypress/support/smartLocators.js[m
+[1mindex e69de29..75cc2d6 100644[m
+[1m--- a/cypress/support/smartLocators.js[m
+[1m+++ b/cypress/support/smartLocators.js[m
+[36m@@ -0,0 +1,27 @@[m
+[32m+[m[32m// cypress/support/smartLocators.js[m
+[32m+[m[32mCypress.Commands.add('smartGet', (selectors, options = {}) => {[m
+[32m+[m[32m    if (typeof selectors === 'string') selectors = [selectors];[m
+[32m+[m[41m  [m
+[32m+[m[32m    let found = false;[m
+[32m+[m[32m    let lastError = null;[m
+[32m+[m[41m  [m
+[32m+[m[32m    for (const sel of selectors) {[m
+[32m+[m[32m      try {[m
+[32m+[m[32m        const el = cy.get(sel, options);[m
+[32m+[m[32m        el.then(($el) => {[m
+[32m+[m[32m          if ($el.length > 0) {[m
+[32m+[m[32m            found = true;[m
+[32m+[m[32m            cy.log(`✅ Found element using selector: ${sel}`);[m
+[32m+[m[32m            return el;[m
+[32m+[m[32m          }[m
+[32m+[m[32m        });[m
+[32m+[m[32m        if (found) break;[m
+[32m+[m[32m      } catch (err) {[m
+[32m+[m[32m        lastError = err;[m
+[32m+[m[32m      }[m
+[32m+[m[32m    }[m
+[32m+[m[41m  [m
+[32m+[m[32m    if (!found && lastError) throw lastError;[m
+[32m+[m[32m    if (!found) throw new Error(`❌ None of the selectors matched: ${selectors.join(', ')}`);[m
+[32m+[m[32m  });[m
+[32m+[m[41m  [m
+\ No newline at end of file[m
+[1mdiff --git a/package-lock.json b/package-lock.json[m
+[1mindex 1a6473c..bd4609e 100644[m
+[1m--- a/package-lock.json[m
+[1m+++ b/package-lock.json[m
+[36m@@ -16,7 +16,6 @@[m
+         "mochawesome-report-generator": "^6.3.2",[m
+         "rimraf": "^5.0.10"[m
+       }[m
+[31m-      [m
+     },[m
+     "node_modules/@cypress/request": {[m
+       "version": "3.0.9",[m

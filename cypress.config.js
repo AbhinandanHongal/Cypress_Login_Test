@@ -2,18 +2,18 @@ const { defineConfig } = require("cypress");
 
 module.exports = defineConfig({
   reporter: "mochawesome",
+
   reporterOptions: {
     reportDir: "cypress/reports",
     overwrite: false,
     html: false, // HTML generated separately using marge
-    json: true,  // JSON output required for merging
+    json: true, // JSON output required for merging
   },
 
   e2e: {
-
     // ✅ Test pattern
     baseUrl: process.env.BASE_URL,
-    specPattern: "cypress/e2e/tests/**/*.cy.js",  
+    specPattern: "cypress/e2e/tests/**/*.cy.js",
 
     // ✅ Artifacts
     video: true,
@@ -36,5 +36,13 @@ module.exports = defineConfig({
       // No additional plugin setup needed
       return config;
     },
+  },
+
+  component: {
+    devServer: {
+      framework: "angular",
+      bundler: "webpack",
+    },
+    specPattern: "**/*.cy.ts",
   },
 });
