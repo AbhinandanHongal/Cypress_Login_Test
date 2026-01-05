@@ -79,20 +79,38 @@ jobs:
 
       - name: Merge mochawesome reports
         run: |
+          rm -f cypress/reports/output.json
+          rm -rf cypress/reports/html
           mkdir -p cypress/reports
-          if ls cypress/reports/*.json 1> /dev/null 2>&1; then
-            npx mochawesome-merge cypress/reports/*.json > cypress/reports/output.json || echo "{}" > cypress/reports/output.json
-            npx mochawesome-report-generator cypress/reports/output.json -f index -o cypress/reports
-          else
-            echo "⚠ No mochawesome JSON files found"
+
+          JSON_FILES=$(ls cypress/reports/mochawesome*.json 2>/dev/null || true)
+
+          if [ -z "$JSON_FILES" ]; then
+          echo "⚠️ No mochawesome JSON files found. Skipping merge."
+          exit 0
           fi
+
+          echo "🟢 Merging mochawesome JSON files:"
+          echo "$JSON_FILES"
+
+          npx mochawesome-merge $JSON_FILES > cypress/reports/output.json
+
+    
+          node -e "JSON.parse(require('fs').readFileSync('cypress/reports/output.json','utf8'))"
+
+          npx mochawesome-report-generator \
+          cypress/reports/output.json \
+          --reportDir cypress/reports/html \
+          --reportFilename index \
+          --charts true
+
+          echo "✅ Mochawesome HTML report generated"
 
       - name: Upload Cypress Reports (Artifact)
         uses: actions/upload-artifact@v4
         with:
           name: cypress-reports
-          path: cypress/reports/
-
+          path: cypress/reports
 
   # -------------------------------------------------
   # 3. Upload to S3
