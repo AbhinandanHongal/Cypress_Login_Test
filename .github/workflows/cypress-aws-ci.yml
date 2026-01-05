@@ -35,6 +35,9 @@ jobs:
       - name: Perform CodeQL Analysis
         uses: github/codeql-action/analyze@v3
 
+      - name: Clean previous Cypress reports
+        run: rm -rf cypress/reports
+
 
   # -------------------------------------------------
   # 2. Run Cypress Tests
