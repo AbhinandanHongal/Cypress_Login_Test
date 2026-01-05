@@ -120,23 +120,23 @@ jobs:
           const s = report.stats;
           const status = s.failures > 0 ? 'FAILED' : 'PASSED';
           const summary = `
-        Total: ${s.tests}
-        Passed: ${s.passes}
-        Failed: ${s.failures}
-        Skipped: ${s.pending || 0}
-        Duration: ${Math.round((s.duration || 0) / 1000)}s
-         `.trim();
+          Total: ${s.tests}
+          Passed: ${s.passes}
+          Failed: ${s.failures}
+          Skipped: ${s.pending || 0}
+          Duration: ${Math.round((s.duration || 0) / 1000)}s
+          `.trim();
 
            fs.appendFileSync(
             process.env.GITHUB_ENV,
             `TEST_STATUS=${status}\n`
-         );
+          );
 
-         fs.appendFileSync(
+          fs.appendFileSync(
            process.env.GITHUB_ENV,
            `TEST_SUMMARY<<SUMMARY_EOF\n${summary}\nSUMMARY_EOF\n`
-         );
-         NODE_EOF
+          );
+          NODE_EOF
 
 
       - name: Upload Cypress Reports (Artifact)
