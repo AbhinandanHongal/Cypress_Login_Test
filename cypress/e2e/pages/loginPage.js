@@ -7,6 +7,7 @@ class LoginPage {
       dashboardTitle: () => cy.get('.sub-navbar-title')
     };
   
+    
     visit() {
       cy.visit('https://retail-staging.48.ie/login'); // full or relative path
       //cy.url().then(url => cy.log("URL after login = " + url));
