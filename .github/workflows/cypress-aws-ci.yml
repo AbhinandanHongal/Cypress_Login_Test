@@ -44,9 +44,9 @@ jobs:
     needs: static-analysis
 
     outputs:
-    test_status: ${{ steps.test_summary.outputs.status }}
-    test_summary: ${{ steps.test_summary.outputs.summary }}
-    start_time: ${{ steps.start_time.outputs.time }}
+      test_status: ${{ steps.test_summary.outputs.status }}
+      test_summary: ${{ steps.test_summary.outputs.summary }}
+      start_time: ${{ steps.start_time.outputs.time }}
 
     env:
       NODE_TLS_REJECT_UNAUTHORIZED: "0"
@@ -55,6 +55,9 @@ jobs:
       REPORT_DIR: cypress/reports/run-${{ github.run_number }}
 
     steps:
+      - name: Capture Start Time
+        id: start_time
+        run: echo "time=$(date -u +"%Y-%m-%d %H:%M:%S UTC")" >> $GITHUB_OUTPUT
 
       - name: Checkout repository
         uses: actions/checkout@v3
@@ -113,6 +116,7 @@ jobs:
       
 
       - name: Generate test summary
+        id: test_summary
         run: |
           node <<'NODE_EOF'
           const fs = require('fs');
