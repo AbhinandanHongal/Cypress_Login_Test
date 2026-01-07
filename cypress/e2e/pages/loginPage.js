@@ -6,8 +6,7 @@ class LoginPage {
       signInButton: () => cy.contains('button', 'Sign In', { timeout: 10000 }),
       dashboardTitle: () => cy.get('.sub-navbar-title')
     };
-  
-    
+  //Demo run
     visit() {
       cy.visit('https://retail-staging.48.ie/login'); // full or relative path
       //cy.url().then(url => cy.log("URL after login = " + url));
